@@ -1,0 +1,49 @@
+<%- include('./partials/header', { activePage: 'gallery', title: 'Галерея' }) %>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="breadcrumbs">Главная / Галерея</div>
+    <h1>Галерея работ</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">Все</button>
+      <button class="filter-btn" data-filter="photo">Фото</button>
+      <button class="filter-btn" data-filter="print">Печать</button>
+      <button class="filter-btn" data-filter="docs">Документы</button>
+    </div>
+
+    <div class="gallery-grid">
+      <% items.forEach((item) => { %>
+        <figure
+          class="gallery-item"
+          data-gallery-item
+          data-category="<%= item.category || 'general' %>"
+          data-src="<%= item.url %>"
+          data-mime="<%= item.type || 'image' %>"
+          tabindex="0"
+        >
+          <% if (item.type === 'video') { %>
+            <video src="<%= item.url %>" muted playsinline preload="metadata"></video>
+          <% } else { %>
+            <img src="<%= item.url %>" alt="<%= item.title %>" />
+          <% } %>
+          <figcaption>
+            <strong><%= item.title %></strong>
+            <div class="text-muted"><%= item.description %></div>
+          </figcaption>
+        </figure>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightbox-close" aria-label="Закрыть">×</button>
+  <div class="lightbox-content" id="lightbox-image"></div>
+</div>
+
+<%- include('./partials/footer') %>

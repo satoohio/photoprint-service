@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title || 'PhotoPrint Service' %></title>
+    <meta name="description" content="Печать фотографий, копирование документов, оформление документов, набор текста." />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container navbar">
+        <a href="/" class="brand">
+          <span class="brand-mark">P</span>
+          <span>PhotoPrint</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Главная навигация">
+          <a href="/" class="<%= activePage === 'home' ? 'active' : '' %>">Главная</a>
+          <a href="/services" class="<%= activePage === 'services' ? 'active' : '' %>">Услуги</a>
+          <a href="/gallery" class="<%= activePage === 'gallery' ? 'active' : '' %>">Галерея</a>
+          <a href="/contacts" class="<%= activePage === 'contacts' ? 'active' : '' %>">Контакты</a>
+        </nav>
+
+        <div class="theme-picker" aria-label="Выбор темы сайта">
+          <span class="theme-label">Тема оформления</span>
+          <div class="theme-switcher">
+            <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
+          </div>
+        </div>
+
+        <a class="phone-box" href="tel:+74951234567">+7 (495) 123-45-67</a>
+      </div>
+    </header>
+
+    <%- include('./flash') %>

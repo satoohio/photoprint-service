@@ -1,0 +1,33 @@
+<%- include('./partials/header', { activePage: 'services', title: 'Услуги' }) %>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="breadcrumbs">Главная / Услуги</div>
+    <h1>Услуги</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container grid-3">
+    <% services.forEach((service) => { %>
+      <article class="card service-card">
+        <div class="service-image service-thumb">
+          <img src="<%= service.image || '/uploads/services/service-default.svg' %>" alt="<%= service.title %>" />
+          <div class="service-icon"><i class="fa <%= service.icon || 'fa-print' %>"></i></div>
+        </div>
+        <h3><%= service.title %></h3>
+        <p class="text-muted"><%= service.description %></p>
+        <div class="meta-row">
+          <span class="price-tag"><%= service.price %> ₽</span>
+          <span class="text-muted"><%= service.priceUnit %></span>
+        </div>
+        <div class="cta-row">
+          <a href="/services/<%= service.slug %>" class="btn btn-secondary">Подробнее</a>
+          <button class="btn btn-primary" data-service-button data-service-name="<%= service.title %>">Заказать</button>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>
+
+<%- include('./partials/footer') %>

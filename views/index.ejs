@@ -1,0 +1,158 @@
+<%- include('./partials/header', { activePage: 'home', title: title || 'PhotoPrint Service' }) %>
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="kicker">Быстро • Качественно • Доступно</span>
+      <h1><%= settings.heroTitle || 'Печать, копирование и оформление документов' %></h1>
+      <p class="lead"><%= settings.heroSubtitle || 'Работаем для дома, офиса и бизнеса.' %></p>
+
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/services">Посмотреть услуги</a>
+        <a class="btn btn-secondary" href="/contacts">Оставить заявку</a>
+      </div>
+
+      <div class="stat-boxes">
+        <div class="stat">
+          <strong>3 000+</strong>
+          <span>выполненных заказов</span>
+        </div>
+        <div class="stat">
+          <strong>24/7</strong>
+          <span>поддержка клиентов</span>
+        </div>
+        <div class="stat">
+          <strong>15 мин</strong>
+          <span>среднее время печати</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-card">
+      <h3>Почему выбирают нас</h3>
+      <div class="info-stack">
+        <div class="card">
+          <strong>Современное оборудование</strong>
+          <p class="text-muted">Высокая скорость и отличное качество печати на любом формате.</p>
+        </div>
+        <div class="card">
+          <strong>Профессиональный подход</strong>
+          <p class="text-muted">Опытные специалисты помогут оформить документы без ошибок.</p>
+        </div>
+        <div class="card">
+          <strong>Доступные цены</strong>
+          <p class="text-muted">Прозрачная стоимость и выгодные тарифы для частных клиентов и бизнеса.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="kicker">Наши услуги</span>
+        <h2 class="section-title">Готовы помочь с любой задачей</h2>
+      </div>
+      <p class="section-copy">Печать фото, копирование и оформление документов для дома, офиса и бизнеса.</p>
+    </div>
+
+    <div class="grid-3">
+      <% services.forEach((service) => { %>
+        <article class="card service-card">
+          <div class="service-image service-thumb">
+            <img src="<%= service.image || '/uploads/services/service-default.svg' %>" alt="<%= service.title %>" />
+            <div class="service-icon"><i class="fa <%= service.icon || 'fa-print' %>"></i></div>
+          </div>
+          <h3><%= service.title %></h3>
+          <p class="text-muted"><%= service.description %></p>
+          <div class="meta-row">
+            <span class="price-tag"><%= service.price %> ₽</span>
+            <span class="text-muted"><%= service.priceUnit %></span>
+          </div>
+          <a href="/services/<%= service.slug %>" class="btn btn-secondary">Подробнее</a>
+        </article>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background: #fff;">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="kicker">Примеры работ</span>
+        <h2 class="section-title">Галерея выполненных заказов</h2>
+      </div>
+      <a href="/gallery" class="btn btn-secondary">Смотреть всю галерею</a>
+    </div>
+
+    <div class="gallery-grid">
+      <% gallery.forEach((item) => { %>
+        <figure class="gallery-item" data-gallery-item data-category="<%= item.category || 'general' %>" data-src="<%= item.url %>" data-mime="<%= item.type || 'image' %>">
+          <% if (item.type === 'video') { %>
+            <video src="<%= item.url %>" muted playsinline preload="metadata"></video>
+          <% } else { %>
+            <img src="<%= item.url %>" alt="<%= item.title %>" />
+          <% } %>
+          <figcaption>
+            <strong><%= item.title %></strong>
+          </figcaption>
+        </figure>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container contact-layout">
+    <div class="info-stack">
+      <div class="contact-card">
+        <h3>Контакты</h3>
+        <p><strong>Адрес:</strong> <%= settings.address %></p>
+        <p><strong>Телефон:</strong> <%= settings.phone %></p>
+        <p><strong>Email:</strong> <%= settings.email %></p>
+        <p><strong>Режим работы:</strong> <%= settings.workHours %></p>
+      </div>
+    </div>
+
+    <div class="contact-card">
+      <h3>Оставить заявку</h3>
+      <form data-form="order">
+        <div class="form-grid">
+          <div class="form-row">
+            <div>
+              <label>Имя</label>
+              <input name="name" required placeholder="Ваше имя" />
+            </div>
+            <div>
+              <label>Телефон</label>
+              <input name="phone" required placeholder="+7 (___) ___-__-__" />
+            </div>
+          </div>
+
+          <div>
+            <label>Email</label>
+            <input name="email" type="email" placeholder="name@example.com" />
+          </div>
+
+          <div>
+            <label>Услуга</label>
+            <input id="order-service" name="service" placeholder="Например: Фото A4" />
+          </div>
+
+          <div>
+            <label>Комментарий</label>
+            <textarea name="message" id="order-message" placeholder="Опишите задачу"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Отправить заявку</button>
+          <div id="order-status"></div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('./partials/footer') %>

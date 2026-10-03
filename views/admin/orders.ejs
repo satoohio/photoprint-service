@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container navbar">
+        <a href="/admin" class="brand">
+          <span class="brand-mark">P</span>
+          <span>Admin Panel</span>
+        </a>
+
+        <div class="theme-picker" aria-label="Выбор темы админки">
+          <span class="theme-label">Тема оформления</span>
+          <div class="theme-switcher">
+            <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
+          </div>
+        </div>
+
+        <form method="POST" action="/admin/logout">
+          <button type="submit" class="btn btn-secondary">Выход</button>
+        </form>
+      </div>
+    </header>
+
+    <div class="container admin-shell">
+      <aside class="sidebar">
+        <a href="/admin">Дашборд</a>
+        <a href="/admin/services">Услуги</a>
+        <a href="/admin/gallery">Галерея</a>
+        <a href="/admin/orders" class="active">Заявки</a>
+        <a href="/admin/settings">Настройки</a>
+      </aside>
+
+      <main class="admin-content">
+        <div class="admin-card">
+          <h2>Заявки</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Имя</th>
+                  <th>Телефон</th>
+                  <th>Услуга</th>
+                  <th>Сообщение</th>
+                  <th>Статус</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% orders.forEach((order) => { %>
+                  <tr>
+                    <td><%= order.name %></td>
+                    <td><%= order.phone %></td>
+                    <td><%= order.service || '—' %></td>
+                    <td><%= order.message || '—' %></td>
+                    <td>
+                      <form method="POST" action="/admin/orders/<%= order.id %>/status">
+                        <select name="status">
+                          <option value="new" <%= order.status === 'new' ? 'selected' : '' %>>Новая</option>
+                          <option value="in_progress" <%= order.status === 'in_progress' ? 'selected' : '' %>>В работе</option>
+                          <option value="done" <%= order.status === 'done' ? 'selected' : '' %>>Выполнена</option>
+                        </select>
+                        <button type="submit" class="btn btn-secondary" style="margin-top: 8px;">Сохранить</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container navbar">
+        <a href="/admin" class="brand">
+          <span class="brand-mark">P</span>
+          <span>Admin Panel</span>
+        </a>
+
+        <div class="theme-picker" aria-label="Выбор темы админки">
+          <span class="theme-label">Тема оформления</span>
+          <div class="theme-switcher">
+            <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
+          </div>
+        </div>
+
+        <form method="POST" action="/admin/logout">
+          <button type="submit" class="btn btn-secondary">Выход</button>
+        </form>
+      </div>
+    </header>
+
+    <div class="container admin-shell">
+      <aside class="sidebar">
+        <a href="/admin" class="active">Дашборд</a>
+        <a href="/admin/services">Услуги</a>
+        <a href="/admin/gallery">Галерея</a>
+        <a href="/admin/orders">Заявки</a>
+        <a href="/admin/settings">Настройки</a>
+      </aside>
+
+      <main class="admin-content">
+        <%- include('../partials/flash') %>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="text-muted">Услуги</div>
+            <h2><%= stats.services %></h2>
+          </div>
+          <div class="stat-card">
+            <div class="text-muted">Элементы галереи</div>
+            <h2><%= stats.galleryItems %></h2>
+          </div>
+          <div class="stat-card">
+            <div class="text-muted">Заявки</div>
+            <h2><%= stats.orders %></h2>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <h3>Последние заявки</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Имя</th>
+                  <th>Телефон</th>
+                  <th>Услуга</th>
+                  <th>Статус</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% recentOrders.forEach((order) => { %>
+                  <tr>
+                    <td><%= order.name %></td>
+                    <td><%= order.phone %></td>
+                    <td><%= order.service || '—' %></td>
+                    <td>
+                      <% if (order.status === 'new') { %>
+                        <span class="badge badge-new">Новая</span>
+                      <% } else if (order.status === 'in_progress') { %>
+                        <span class="badge badge-progress">В работе</span>
+                      <% } else { %>
+                        <span class="badge badge-done">Выполнена</span>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

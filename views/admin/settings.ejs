@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container navbar">
+        <a href="/admin" class="brand">
+          <span class="brand-mark">P</span>
+          <span>Admin Panel</span>
+        </a>
+
+        <div class="theme-picker" aria-label="Выбор темы админки">
+          <span class="theme-label">Тема оформления</span>
+          <div class="theme-switcher">
+            <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
+          </div>
+        </div>
+
+        <form method="POST" action="/admin/logout">
+          <button type="submit" class="btn btn-secondary">Выход</button>
+        </form>
+      </div>
+    </header>
+
+    <div class="container admin-shell">
+      <aside class="sidebar">
+        <a href="/admin">Дашборд</a>
+        <a href="/admin/services">Услуги</a>
+        <a href="/admin/gallery">Галерея</a>
+        <a href="/admin/orders">Заявки</a>
+        <a href="/admin/settings" class="active">Настройки</a>
+      </aside>
+
+      <main class="admin-content">
+        <%- include('../partials/flash') %>
+        <div class="admin-card">
+          <h2>Настройки сайта</h2>
+          <form method="POST" action="/admin/settings">
+            <div class="form-grid">
+              <div>
+                <label>Название сайта</label>
+                <input name="siteName" value="<%= settings.siteName %>" />
+              </div>
+              <div>
+                <label>Телефон</label>
+                <input name="phone" value="<%= settings.phone %>" />
+              </div>
+              <div>
+                <label>Email</label>
+                <input name="email" value="<%= settings.email %>" />
+              </div>
+              <div>
+                <label>Адрес</label>
+                <input name="address" value="<%= settings.address %>" />
+              </div>
+              <div>
+                <label>Режим работы</label>
+                <input name="workHours" value="<%= settings.workHours %>" />
+              </div>
+              <div>
+                <label>Hero title</label>
+                <input name="heroTitle" value="<%= settings.heroTitle %>" />
+              </div>
+              <div>
+                <label>Hero subtitle</label>
+                <textarea name="heroSubtitle"><%= settings.heroSubtitle %></textarea>
+              </div>
+              <div>
+                <label>Карта (embed)</label>
+                <textarea name="mapEmbed"><%= settings.mapEmbed %></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Сохранить</button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,52 @@
+<%- include('./partials/header', { activePage: 'services', title: service.title }) %>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="breadcrumbs">Главная / Услуги / <%= service.title %></div>
+    <h1><%= service.title %></h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container contact-layout">
+    <div class="contact-card">
+      <div class="service-image" style="height: 600px; margin-bottom: 18px;">
+        <img src="<%= service.image || '/uploads/services/service-default.svg' %>" alt="<%= service.title %>" />
+      </div>
+      <div class="price-tag"><%= service.price %> ₽</div>
+      <p class="text-muted"><%= service.description %></p>
+    </div>
+
+    <div class="contact-card">
+      <h3>Оставить заявку</h3>
+      <form data-form="order">
+        <div class="form-grid">
+          <div>
+            <label>Имя</label>
+            <input name="name" required />
+          </div>
+          <div>
+            <label>Телефон</label>
+            <input name="phone" required />
+          </div>
+          <div>
+            <label>Email</label>
+            <input name="email" type="email" />
+          </div>
+          <div>
+            <label>Услуга</label>
+            <input id="order-service" name="service" value="<%= service.title %>" />
+          </div>
+          <div>
+            <label>Комментарий</label>
+            <textarea name="message" id="order-message"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Отправить заявку</button>
+          <div id="order-status"></div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('./partials/footer') %>

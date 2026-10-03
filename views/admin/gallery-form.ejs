@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container navbar">
+        <a href="/admin" class="brand">
+          <span class="brand-mark">P</span>
+          <span>Admin Panel</span>
+        </a>
+
+        <div class="theme-picker" aria-label="Выбор темы админки">
+          <span class="theme-label">Тема оформления</span>
+          <div class="theme-switcher">
+            <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
+          </div>
+        </div>
+
+        <form method="POST" action="/admin/logout">
+          <button type="submit" class="btn btn-secondary">Выход</button>
+        </form>
+      </div>
+    </header>
+
+    <div class="container admin-shell">
+      <aside class="sidebar">
+        <a href="/admin">Дашборд</a>
+        <a href="/admin/services">Услуги</a>
+        <a href="/admin/gallery" class="active">Галерея</a>
+        <a href="/admin/orders">Заявки</a>
+        <a href="/admin/settings">Настройки</a>
+      </aside>
+
+      <main class="admin-content">
+        <div class="admin-card">
+          <h2><%= item ? 'Редактировать элемент' : 'Новый элемент галереи' %></h2>
+          <form method="POST" action="<%= item ? '/admin/gallery/' + item.id : '/admin/gallery' %>" enctype="multipart/form-data">
+            <div class="form-grid">
+              <div>
+                <label>Название</label>
+                <input name="title" value="<%= item ? item.title : '' %>" required />
+              </div>
+              <div class="form-row">
+                <div>
+                  <label>Тип</label>
+                  <select name="type">
+                    <option value="image" <%= item && item.type === 'image' ? 'selected' : '' %>>Image</option>
+                    <option value="video" <%= item && item.type === 'video' ? 'selected' : '' %>>Video</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Категория</label>
+                  <input name="category" value="<%= item ? item.category : 'general' %>" />
+                </div>
+              </div>
+              <div>
+                <label>Описание</label>
+                <textarea name="description"><%= item ? item.description : '' %></textarea>
+              </div>
+              <div>
+                <label>Порядок</label>
+                <input type="number" name="order" value="<%= item ? item.order : 0 %>" />
+              </div>
+              <div>
+                <label>Файл</label>
+                <input type="file" name="media" accept="image/*,video/mp4" />
+              </div>
+              <div class="cta-row">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="/admin/gallery" class="btn btn-secondary">Назад</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

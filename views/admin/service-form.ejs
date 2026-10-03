@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container navbar">
+        <a href="/admin" class="brand">
+          <span class="brand-mark">P</span>
+          <span>Admin Panel</span>
+        </a>
+
+        <div class="theme-picker" aria-label="Выбор темы админки">
+          <span class="theme-label">Тема оформления</span>
+          <div class="theme-switcher">
+            <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
+            <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
+          </div>
+        </div>
+
+        <form method="POST" action="/admin/logout">
+          <button type="submit" class="btn btn-secondary">Выход</button>
+        </form>
+      </div>
+    </header>
+
+    <div class="container admin-shell">
+      <aside class="sidebar">
+        <a href="/admin">Дашборд</a>
+        <a href="/admin/services" class="active">Услуги</a>
+        <a href="/admin/gallery">Галерея</a>
+        <a href="/admin/orders">Заявки</a>
+        <a href="/admin/settings">Настройки</a>
+      </aside>
+
+      <main class="admin-content">
+        <div class="admin-card">
+          <h2><%= service ? 'Редактировать услугу' : 'Новая услуга' %></h2>
+          <form method="POST" action="<%= service ? '/admin/services/' + service.id : '/admin/services' %>" enctype="multipart/form-data">
+            <div class="form-grid">
+              <div>
+                <label>Название</label>
+                <input name="title" value="<%= service ? service.title : '' %>" required />
+              </div>
+              <div>
+                <label>Slug</label>
+                <input name="slug" value="<%= service ? service.slug : '' %>" placeholder="авто из названия" />
+              </div>
+              <div>
+                <label>Описание</label>
+                <textarea name="description"><%= service ? service.description : '' %></textarea>
+              </div>
+              <div class="form-row">
+                <div>
+                  <label>Цена</label>
+                  <input name="price" type="number" step="0.01" value="<%= service ? service.price : 0 %>" />
+                </div>
+                <div>
+                  <label>Единица</label>
+                  <input name="priceUnit" value="<%= service ? service.priceUnit : 'шт' %>" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div>
+                  <label>Иконка</label>
+                  <input name="icon" value="<%= service ? service.icon : 'fa-print' %>" />
+                </div>
+                <div>
+                  <label>Порядок</label>
+                  <input name="order" type="number" value="<%= service ? service.order : 0 %>" />
+                </div>
+              </div>
+              <div>
+                <label>Изображение</label>
+                <input type="file" name="image" accept="image/*" />
+              </div>
+              <div>
+                <label>
+                  <input type="checkbox" name="isActive" <%= service && service.isActive ? 'checked' : '' %> />
+                  Активна
+                </label>
+              </div>
+              <div class="cta-row">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="/admin/services" class="btn btn-secondary">Назад</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+    <script src="/js/main.js"></script>
+  </body>
+</html>
