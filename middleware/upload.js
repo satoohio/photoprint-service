@@ -2,6 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.mp4']);
+const MIME_TO_EXTENSION = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'video/mp4': '.mp4'
+};
+
 function ensureDirectory(dir) {
   fs.mkdirSync(dir, { recursive: true });
   return dir;
@@ -13,7 +21,7 @@ const serviceStorage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename(req, file, cb) {
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase();
     const safeName = `${Date.now()}-${Math.random().toString(16).slice(2)}${ext}`;
     cb(null, safeName);
   }
@@ -25,20 +33,21 @@ const galleryStorage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename(req, file, cb) {
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase();
     const safeName = `${Date.now()}-${Math.random().toString(16).slice(2)}${ext}`;
     cb(null, safeName);
   }
 });
 
 function fileFilter(req, file, cb) {
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'video/mp4'];
-  if (allowed.includes(file.mimetype)) {
-    cb(null, true);
-    return;
+  const extension = path.extname(file.originalname).toLowerCase();
+  const expectedExtension = MIME_TO_EXTENSION[file.mimetype];
+
+  if (!ALLOWED_EXTENSIONS.has(extension) || !expectedExtension || extension !== expectedExtension) {
+    return cb(new Error('Недоступный тип файла. Используйте JPG, PNG, WEBP или MP4.'));
   }
 
-  cb(new Error('Недоступный тип файла. Используйте JPG, PNG, WEBP или MP4.'));
+  cb(null, true);
 }
 
 const uploadServiceImage = multer({
