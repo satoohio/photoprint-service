@@ -1,100 +1,95 @@
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= title %></title>
-    <link rel="stylesheet" href="/css/style.css" />
-  </head>
-  <body>
-    <header class="topbar">
-      <div class="container navbar">
-        <a href="/admin" class="brand">
-          <span class="brand-mark">P</span>
-          <span>Admin Panel</span>
-        </a>
+<%- include('./partials/start') %>
+<%- include('./partials/topbar') %>
 
-        <div class="theme-picker" aria-label="Выбор темы админки">
-          <span class="theme-label">Тема оформления</span>
-          <div class="theme-switcher">
-            <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
+  <div class="page-header">
+    <div>
+      <h1><%= service ? 'Редактировать услугу' : 'Новая услуга' %></h1>
+      <p class="page-sub"><%= service ? service.title : 'Заполните данные новой услуги' %></p>
+    </div>
+    <a href="/admin/services" class="btn btn-ghost">
+      <i class="fa-solid fa-arrow-left"></i> Назад
+    </a>
+  </div>
+
+  <div class="admin-card">
+    <form method="POST" action="<%= service ? '/admin/services/' + service.id : '/admin/services' %>" enctype="multipart/form-data">
+      <div class="form-grid">
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-align-left"></i> Основное</div>
+          <div>
+            <label for="f-title">Название <span class="req">*</span></label>
+            <input id="f-title" name="title" value="<%= service ? service.title : '' %>" required placeholder="Например: Фото 10x15" />
+          </div>
+          <div>
+            <label for="f-slug">Slug</label>
+            <input id="f-slug" name="slug" value="<%= service ? service.slug : '' %>" placeholder="автоматически из названия" />
+            <div class="form-hint">Адрес страницы: /services/&lt;slug&gt;</div>
+          </div>
+          <div>
+            <label for="f-description">Описание</label>
+            <textarea id="f-description" name="description" placeholder="Кратко опишите услугу"><%= service ? service.description : '' %></textarea>
           </div>
         </div>
 
-        <form method="POST" action="/admin/logout">
-          <button type="submit" class="btn btn-secondary">Выход</button>
-        </form>
-      </div>
-    </header>
-
-    <div class="container admin-shell">
-      <aside class="sidebar">
-        <a href="/admin">Дашборд</a>
-        <a href="/admin/services" class="active">Услуги</a>
-        <a href="/admin/gallery">Галерея</a>
-        <a href="/admin/orders">Заявки</a>
-        <a href="/admin/settings">Настройки</a>
-      </aside>
-
-      <main class="admin-content">
-        <div class="admin-card">
-          <h2><%= service ? 'Редактировать услугу' : 'Новая услуга' %></h2>
-          <form method="POST" action="<%= service ? '/admin/services/' + service.id : '/admin/services' %>" enctype="multipart/form-data">
-            <div class="form-grid">
-              <div>
-                <label>Название</label>
-                <input name="title" value="<%= service ? service.title : '' %>" required />
-              </div>
-              <div>
-                <label>Slug</label>
-                <input name="slug" value="<%= service ? service.slug : '' %>" placeholder="авто из названия" />
-              </div>
-              <div>
-                <label>Описание</label>
-                <textarea name="description"><%= service ? service.description : '' %></textarea>
-              </div>
-              <div class="form-row">
-                <div>
-                  <label>Цена</label>
-                  <input name="price" type="number" step="0.01" value="<%= service ? service.price : 0 %>" />
-                </div>
-                <div>
-                  <label>Единица</label>
-                  <input name="priceUnit" value="<%= service ? service.priceUnit : 'шт' %>" />
-                </div>
-              </div>
-              <div class="form-row">
-                <div>
-                  <label>Иконка</label>
-                  <input name="icon" value="<%= service ? service.icon : 'fa-print' %>" />
-                </div>
-                <div>
-                  <label>Порядок</label>
-                  <input name="order" type="number" value="<%= service ? service.order : 0 %>" />
-                </div>
-              </div>
-              <div>
-                <label>Изображение</label>
-                <input type="file" name="image" accept="image/*" />
-              </div>
-              <div>
-                <label>
-                  <input type="checkbox" name="isActive" <%= service && service.isActive ? 'checked' : '' %> />
-                  Активна
-                </label>
-              </div>
-              <div class="cta-row">
-                <button type="submit" class="btn btn-primary">Сохранить</button>
-                <a href="/admin/services" class="btn btn-secondary">Назад</a>
-              </div>
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-ruble-sign"></i> Цена</div>
+          <div class="form-row">
+            <div>
+              <label for="f-price">Цена, ₽</label>
+              <input id="f-price" name="price" type="number" step="0.01" min="0" value="<%= service ? service.price : 0 %>" />
             </div>
-          </form>
+            <div>
+              <label for="f-price-unit">Единица</label>
+              <input id="f-price-unit" name="priceUnit" value="<%= service ? service.priceUnit : 'шт' %>" placeholder="шт / лист / страница" />
+            </div>
+          </div>
         </div>
-      </main>
-    </div>
-    <script src="/js/main.js"></script>
-  </body>
-</html>
+
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-solid fa-sliders"></i> Параметры</div>
+          <div class="form-row">
+            <div>
+              <label for="f-icon">Иконка (Font Awesome)</label>
+              <input id="f-icon" name="icon" value="<%= service ? service.icon : 'fa-print' %>" placeholder="fa-print" />
+            </div>
+            <div>
+              <label for="f-order">Порядок</label>
+              <input id="f-order" name="order" type="number" value="<%= service ? service.order : 0 %>" />
+            </div>
+          </div>
+          <div class="check-field">
+            <input type="checkbox" id="f-active" name="isActive" <%= service && service.isActive ? 'checked' : '' %> />
+            <label for="f-active">Показывать на сайте</label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title"><i class="fa-regular fa-image"></i> Изображение</div>
+          <div>
+            <label for="f-image">Файл изображения</label>
+            <input id="f-image" type="file" name="image" accept="image/*" />
+            <div class="form-hint">JPG, PNG или WEBP, до 5 МБ.</div>
+          </div>
+          <% if (service && service.image) { %>
+            <div class="file-preview">
+              <img src="<%= service.image %>" alt="Текущее изображение" />
+              <div class="form-hint">Текущее изображение. Выберите новый файл, чтобы заменить его.</div>
+            </div>
+            <div class="check-field">
+              <input type="checkbox" id="f-remove-image" name="removeImage" value="1" />
+              <label for="f-remove-image">Убрать изображение</label>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-check"></i> Сохранить
+          </button>
+          <a href="/admin/services" class="btn btn-secondary">Отмена</a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+<%- include('./partials/end') %>

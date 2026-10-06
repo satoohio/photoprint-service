@@ -1,11 +1,19 @@
 <%- include('./partials/header', { activePage: '', title: 'Страница не найдена' }) %>
 
-<section class="section">
-  <div class="container" style="text-align:center; padding: 60px 0;">
-    <h1>404</h1>
-    <p>Страница, которую вы ищете, не существует.</p>
-    <a href="/" class="btn btn-primary">На главную</a>
-  </div>
-</section>
+<main id="main">
+  <section class="error-page">
+    <div class="container">
+      <div class="error-code">404</div>
+      <h1>Страница не найдена</h1>
+      <p>Возможно, страница была удалена или вы перешли по неверной ссылке.</p>
+      <div class="error-actions">
+        <a href="/" class="btn btn-primary">
+          <i class="fa-solid fa-house"></i> На главную
+        </a>
+        <a href="/services" class="btn btn-secondary">Посмотреть услуги</a>
+      </div>
+    </div>
+  </section>
+</main>
 
 <%- include('./partials/footer') %>

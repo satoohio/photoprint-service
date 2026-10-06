@@ -1,97 +1,87 @@
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= title %></title>
-    <link rel="stylesheet" href="/css/style.css" />
-  </head>
-  <body>
-    <header class="topbar">
-      <div class="container navbar">
-        <a href="/admin" class="brand">
-          <span class="brand-mark">P</span>
-          <span>Admin Panel</span>
-        </a>
+<%- include('./partials/start') %>
+<%- include('./partials/topbar') %>
 
-        <div class="theme-picker" aria-label="Выбор темы админки">
-          <span class="theme-label">Тема оформления</span>
-          <div class="theme-switcher">
-            <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
-          </div>
-        </div>
-
-        <form method="POST" action="/admin/logout">
-          <button type="submit" class="btn btn-secondary">Выход</button>
-        </form>
-      </div>
-    </header>
-
-    <div class="container admin-shell">
-      <aside class="sidebar">
-        <a href="/admin" class="active">Дашборд</a>
-        <a href="/admin/services">Услуги</a>
-        <a href="/admin/gallery">Галерея</a>
-        <a href="/admin/orders">Заявки</a>
-        <a href="/admin/settings">Настройки</a>
-      </aside>
-
-      <main class="admin-content">
-        <%- include('../partials/flash') %>
-
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="text-muted">Услуги</div>
-            <h2><%= stats.services %></h2>
-          </div>
-          <div class="stat-card">
-            <div class="text-muted">Элементы галереи</div>
-            <h2><%= stats.galleryItems %></h2>
-          </div>
-          <div class="stat-card">
-            <div class="text-muted">Заявки</div>
-            <h2><%= stats.orders %></h2>
-          </div>
-        </div>
-
-        <div class="admin-card">
-          <h3>Последние заявки</h3>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Имя</th>
-                  <th>Телефон</th>
-                  <th>Услуга</th>
-                  <th>Статус</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% recentOrders.forEach((order) => { %>
-                  <tr>
-                    <td><%= order.name %></td>
-                    <td><%= order.phone %></td>
-                    <td><%= order.service || '—' %></td>
-                    <td>
-                      <% if (order.status === 'new') { %>
-                        <span class="badge badge-new">Новая</span>
-                      <% } else if (order.status === 'in_progress') { %>
-                        <span class="badge badge-progress">В работе</span>
-                      <% } else { %>
-                        <span class="badge badge-done">Выполнена</span>
-                      <% } %>
-                    </td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </main>
+  <div class="page-header">
+    <div>
+      <h1>Дашборд</h1>
+      <p class="page-sub">Обзор активности сайта</p>
     </div>
-    <script src="/js/main.js"></script>
-  </body>
-</html>
+    <a href="/admin/orders" class="btn btn-secondary">
+      Все заявки <i class="fa-solid fa-arrow-right"></i>
+    </a>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-card-icon"><i class="fa-solid fa-layer-group"></i></span>
+      <div>
+        <div class="stat-card-label">Услуги</div>
+        <div class="stat-card-value"><%= stats.services %></div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card-icon is-success"><i class="fa-regular fa-images"></i></span>
+      <div>
+        <div class="stat-card-label">Элементы галереи</div>
+        <div class="stat-card-value"><%= stats.galleryItems %></div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card-icon is-warning"><i class="fa-solid fa-inbox"></i></span>
+      <div>
+        <div class="stat-card-label">Заявки</div>
+        <div class="stat-card-value"><%= stats.orders %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="admin-card-head">
+      <h2>Последние заявки</h2>
+      <a href="/admin/orders" class="btn btn-ghost btn-sm">Показать все</a>
+    </div>
+
+    <% if (!recentOrders.length) { %>
+      <div class="empty-state">
+        <i class="fa-regular fa-folder-open"></i>
+        <h3>Заявок пока нет</h3>
+        <p>Как только клиенты начнут оставлять заявки, они появятся здесь.</p>
+      </div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Клиент</th>
+              <th>Услуга</th>
+              <th>Дата</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentOrders.forEach((order) => { %>
+              <tr>
+                <td>
+                  <span class="cell-title"><%= order.name %></span>
+                  <span class="cell-sub"><%= order.phone %></span>
+                </td>
+                <td><%= order.service || '—' %></td>
+                <td><%= new Date(order.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
+                <td>
+                  <% if (order.status === 'new') { %>
+                    <span class="badge badge-new"><i class="fa-solid fa-sparkles" style="font-size: 0.65rem;"></i> Новая</span>
+                  <% } else if (order.status === 'in_progress') { %>
+                    <span class="badge badge-progress"><i class="fa-solid fa-spinner" style="font-size: 0.65rem;"></i> В работе</span>
+                  <% } else { %>
+                    <span class="badge badge-done"><i class="fa-solid fa-check" style="font-size: 0.65rem;"></i> Выполнена</span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+<%- include('./partials/end') %>

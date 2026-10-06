@@ -1,16 +1,18 @@
-const fs = require('fs');
-const path = require('path');
+const { Op } = require('sequelize');
 const { Service, GalleryItem, Order, Setting } = require('../models');
 const { createService, updateService } = require('./serviceController');
 const { createGalleryItem } = require('./galleryController');
 const { getSettingsMap } = require('./homeController');
+const { safeDeleteUpload } = require('../utils/uploads');
+
+const ORDER_STATUSES = ['new', 'in_progress', 'done'];
 
 async function renderDashboard(req, res) {
-  const [services, galleryItems, orders, settings] = await Promise.all([
+  const [services, galleryItems, totalOrders, orders] = await Promise.all([
     Service.count(),
     GalleryItem.count(),
-    Order.findAll({ order: [['createdAt', 'DESC']], limit: 8, raw: true }),
-    getSettingsMap()
+    Order.count(),
+    Order.findAll({ order: [['createdAt', 'DESC']], limit: 8, raw: true })
   ]);
 
   res.render('admin/dashboard', {
@@ -18,10 +20,9 @@ async function renderDashboard(req, res) {
     stats: {
       services,
       galleryItems,
-      orders: orders.length
+      orders: totalOrders
     },
     recentOrders: orders,
-    settings,
     activePage: 'dashboard'
   });
 }
@@ -37,7 +38,16 @@ async function renderServicesPage(req, res) {
 
 async function renderServiceForm(req, res) {
   const { id } = req.params;
-  const service = id ? await Service.findByPk(id) : null;
+  let service = null;
+
+  if (id) {
+    service = await Service.findByPk(id);
+    if (!service) {
+      req.flash('error', 'Услуга не найдена');
+      return res.redirect('/admin/services');
+    }
+  }
+
   res.render('admin/service-form', {
     title: service ? 'Редактировать услугу' : 'Новая услуга',
     service,
@@ -47,10 +57,14 @@ async function renderServiceForm(req, res) {
 
 async function saveService(req, res) {
   const { id } = req.params;
-  const service = id ? await Service.findByPk(id) : null;
 
   try {
-    if (service) {
+    if (id) {
+      const service = await Service.findByPk(id);
+      if (!service) {
+        req.flash('error', 'Услуга не найдена');
+        return res.redirect('/admin/services');
+      }
       await updateService(req, res, service);
       req.flash('success', 'Услуга обновлена');
       return res.redirect('/admin/services');
@@ -61,7 +75,7 @@ async function saveService(req, res) {
     return res.redirect('/admin/services');
   } catch (error) {
     req.flash('error', 'Ошибка при сохранении услуги');
-    return res.redirect('/admin/services');
+    return res.redirect(id ? `/admin/services/${id}/edit` : '/admin/services/new');
   }
 }
 
@@ -69,11 +83,13 @@ async function deleteService(req, res) {
   const { id } = req.params;
   const service = await Service.findByPk(id);
 
-  if (service && service.image) {
-    const filePath = path.join(__dirname, '../public', service.image);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+  if (!service) {
+    req.flash('error', 'Услуга не найдена');
+    return res.redirect('/admin/services');
+  }
+
+  if (service.image) {
+    safeDeleteUpload(service.image);
   }
 
   await service.destroy();
@@ -92,10 +108,23 @@ async function renderGalleryPage(req, res) {
 
 async function renderGalleryForm(req, res) {
   const { id } = req.params;
-  const item = id ? await GalleryItem.findByPk(id) : null;
+  let item = null;
+
+  if (id) {
+    item = await GalleryItem.findByPk(id);
+    if (!item) {
+      req.flash('error', 'Элемент галереи не найден');
+      return res.redirect('/admin/gallery');
+    }
+  }
+
+  const rows = await GalleryItem.findAll({ attributes: ['category'], raw: true });
+  const categories = [...new Set(rows.map((row) => row.category).filter(Boolean))].sort();
+
   res.render('admin/gallery-form', {
     title: item ? 'Редактировать элемент' : 'Новый элемент галереи',
     item,
+    categories,
     activePage: 'gallery'
   });
 }
@@ -106,7 +135,12 @@ async function saveGallery(req, res) {
   try {
     if (id) {
       const item = await GalleryItem.findByPk(id);
-      const { title, category, description, order, type } = req.body;
+      if (!item) {
+        req.flash('error', 'Элемент галереи не найден');
+        return res.redirect('/admin/gallery');
+      }
+
+      const { title, category, description, order, type, removeFile } = req.body;
       const updateData = {
         title,
         category: category || 'general',
@@ -114,9 +148,17 @@ async function saveGallery(req, res) {
         order: Number(order || 0),
         type: type || item.type
       };
+
       if (req.file) {
+        if (item.url) safeDeleteUpload(item.url);
         updateData.url = `/uploads/gallery/${req.file.filename}`;
+        updateData.thumbnail = null;
+      } else if (removeFile === '1' || removeFile === 'on') {
+        if (item.url) safeDeleteUpload(item.url);
+        updateData.url = '';
+        updateData.thumbnail = null;
       }
+
       await item.update(updateData);
       req.flash('success', 'Элемент галереи обновлён');
       return res.redirect('/admin/gallery');
@@ -127,7 +169,7 @@ async function saveGallery(req, res) {
     return res.redirect('/admin/gallery');
   } catch (error) {
     req.flash('error', 'Ошибка при сохранении файла галереи');
-    return res.redirect('/admin/gallery');
+    return res.redirect(id ? `/admin/gallery/${id}/edit` : '/admin/gallery/new');
   }
 }
 
@@ -135,11 +177,13 @@ async function deleteGallery(req, res) {
   const { id } = req.params;
   const item = await GalleryItem.findByPk(id);
 
-  if (item && item.url) {
-    const filePath = path.join(__dirname, '../public', item.url);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+  if (!item) {
+    req.flash('error', 'Элемент галереи не найден');
+    return res.redirect('/admin/gallery');
+  }
+
+  if (item.url) {
+    safeDeleteUpload(item.url);
   }
 
   await item.destroy();
@@ -148,10 +192,30 @@ async function deleteGallery(req, res) {
 }
 
 async function renderOrdersPage(req, res) {
-  const orders = await Order.findAll({ order: [['createdAt', 'DESC']], raw: true });
+  const { status, q } = req.query;
+  const where = {};
+
+  if (status && ORDER_STATUSES.includes(status)) {
+    where.status = status;
+  }
+
+  const term = (q || '').trim();
+  if (term) {
+    const like = `%${term}%`;
+    where[Op.or] = [
+      { name: { [Op.like]: like } },
+      { phone: { [Op.like]: like } },
+      { email: { [Op.like]: like } },
+      { service: { [Op.like]: like } }
+    ];
+  }
+
+  const orders = await Order.findAll({ where, order: [['createdAt', 'DESC']], raw: true });
+
   res.render('admin/orders', {
     title: 'Заявки',
     orders,
+    filters: { status: status || '', q: term },
     activePage: 'orders'
   });
 }
@@ -159,14 +223,51 @@ async function renderOrdersPage(req, res) {
 async function updateOrderStatus(req, res) {
   const { id } = req.params;
   const { status } = req.body;
+  const wantsJson = req.method === 'PATCH';
+
+  try {
+    if (!ORDER_STATUSES.includes(status)) {
+      throw new Error('Недопустимый статус');
+    }
+
+    const order = await Order.findByPk(id);
+    if (!order) {
+      if (wantsJson) {
+        return res.status(404).json({ success: false, message: 'Заявка не найдена' });
+      }
+      req.flash('error', 'Заявка не найдена');
+      return res.redirect('/admin/orders');
+    }
+
+    await order.update({ status });
+
+    if (wantsJson) {
+      return res.json({ success: true, order });
+    }
+
+    req.flash('success', 'Статус заявки обновлён');
+    return res.redirect('/admin/orders');
+  } catch (error) {
+    if (wantsJson) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+    req.flash('error', 'Не удалось обновить статус заявки');
+    return res.redirect('/admin/orders');
+  }
+}
+
+async function deleteOrder(req, res) {
+  const { id } = req.params;
   const order = await Order.findByPk(id);
 
   if (!order) {
-    return res.status(404).json({ message: 'Заявка не найдена' });
+    req.flash('error', 'Заявка не найдена');
+    return res.redirect('/admin/orders');
   }
 
-  await order.update({ status });
-  return res.json({ success: true, order });
+  await order.destroy();
+  req.flash('success', 'Заявка удалена');
+  return res.redirect('/admin/orders');
 }
 
 async function renderSettingsPage(req, res) {
@@ -178,19 +279,36 @@ async function renderSettingsPage(req, res) {
   });
 }
 
-async function saveSettings(req, res) {
-  const entries = req.body;
+const ALLOWED_SETTING_KEYS = [
+  'siteName',
+  'phone',
+  'email',
+  'address',
+  'workHours',
+  'heroTitle',
+  'heroSubtitle',
+  'mapEmbed'
+];
 
-  for (const [key, value] of Object.entries(entries)) {
-    const existing = await Setting.findOne({ where: { key } });
-    if (existing) {
-      await existing.update({ value });
-    } else {
-      await Setting.create({ key, value });
+async function saveSettings(req, res) {
+  try {
+    for (const key of ALLOWED_SETTING_KEYS) {
+      if (!(key in req.body)) continue;
+      const value = String(req.body[key] ?? '');
+
+      const existing = await Setting.findOne({ where: { key } });
+      if (existing) {
+        await existing.update({ value });
+      } else {
+        await Setting.create({ key, value });
+      }
     }
+
+    req.flash('success', 'Настройки сохранены');
+  } catch (error) {
+    req.flash('error', 'Не удалось сохранить настройки');
   }
 
-  req.flash('success', 'Настройки сохранены');
   return res.redirect('/admin/settings');
 }
 
@@ -206,6 +324,7 @@ module.exports = {
   deleteGallery,
   renderOrdersPage,
   updateOrderStatus,
+  deleteOrder,
   renderSettingsPage,
   saveSettings
 };

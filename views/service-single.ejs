@@ -1,52 +1,88 @@
-<%- include('./partials/header', { activePage: 'services', title: service.title }) %>
+<%- include('./partials/header', { activePage: 'services', title: service.title, description: service.description }) %>
 
-<section class="page-hero">
-  <div class="container">
-    <div class="breadcrumbs">Главная / Услуги / <%= service.title %></div>
-    <h1><%= service.title %></h1>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container contact-layout">
-    <div class="contact-card">
-      <div class="service-image" style="height: 600px; margin-bottom: 18px;">
-        <img src="<%= service.image || '/uploads/services/service-default.svg' %>" alt="<%= service.title %>" />
+<main id="main">
+  <section class="page-hero">
+    <div class="container">
+      <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="/">Главная</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <a href="/services">Услуги</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span><%= service.title %></span>
+      </nav>
+      <h1><%= service.title %></h1>
+      <div class="meta-row" style="margin-top: 12px;">
+        <span class="price-tag"><%= service.price %> ₽</span>
+        <span class="price-unit">/ <%= service.priceUnit %></span>
       </div>
-      <div class="price-tag"><%= service.price %> ₽</div>
-      <p class="text-muted"><%= service.description %></p>
     </div>
+  </section>
 
-    <div class="contact-card">
-      <h3>Оставить заявку</h3>
-      <form data-form="order">
-        <div class="form-grid">
-          <div>
-            <label>Имя</label>
-            <input name="name" required />
-          </div>
-          <div>
-            <label>Телефон</label>
-            <input name="phone" required />
-          </div>
-          <div>
-            <label>Email</label>
-            <input name="email" type="email" />
-          </div>
-          <div>
-            <label>Услуга</label>
-            <input id="order-service" name="service" value="<%= service.title %>" />
-          </div>
-          <div>
-            <label>Комментарий</label>
-            <textarea name="message" id="order-message"></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary">Отправить заявку</button>
-          <div id="order-status"></div>
+  <section class="section">
+    <div class="container contact-grid">
+      <div class="card reveal">
+        <div class="service-media" style="border-radius: var(--radius-md);">
+          <img src="<%= service.image || '/uploads/services/service-default.svg' %>" alt="<%= service.title %>" />
+          <span class="service-icon"><i class="fa <%= service.icon || 'fa-print' %>"></i></span>
         </div>
-      </form>
+        <p class="text-muted"><%= service.description %></p>
+        <ul class="contact-list">
+          <li>
+            <i class="fa-solid fa-clock"></i>
+            <div>
+              <strong>Сроки</strong>
+              <span>Быстро — от 15 минут после подтверждения заказа</span>
+            </div>
+          </li>
+          <li>
+            <i class="fa-solid fa-circle-check"></i>
+            <div>
+              <strong>Контроль качества</strong>
+              <span>Проверяем каждый отпечаток перед выдачей</span>
+            </div>
+          </li>
+          <li>
+            <i class="fa-solid fa-shield-halved"></i>
+            <div>
+              <strong>Оплата</strong>
+              <span>Наличные, карта и безналичный расчёт для компаний</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card reveal" style="position: sticky; top: calc(var(--header-height) + 20px);">
+        <h3>Оставить заявку</h3>
+        <p class="text-muted" style="font-size: 0.93rem;">Заполните форму — перезвоним и подтвердим детали заказа.</p>
+        <form data-form="order">
+          <div class="form-grid">
+            <div>
+              <label for="single-name">Имя <span class="req">*</span></label>
+              <input id="single-name" name="name" required placeholder="Ваше имя" />
+            </div>
+            <div>
+              <label for="single-phone">Телефон <span class="req">*</span></label>
+              <input id="single-phone" name="phone" required placeholder="+7 (___) ___-__-__" />
+            </div>
+            <div>
+              <label for="single-email">Email</label>
+              <input id="single-email" name="email" type="email" placeholder="name@example.com" />
+            </div>
+            <div>
+              <label for="order-service">Услуга</label>
+              <input id="order-service" name="service" value="<%= service.title %>" readonly />
+            </div>
+            <div>
+              <label for="single-message">Комментарий</label>
+              <textarea id="single-message" name="message" placeholder="Количество, формат, пожелания"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Отправить заявку</button>
+            <div data-form-status></div>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
+</main>
 
 <%- include('./partials/footer') %>

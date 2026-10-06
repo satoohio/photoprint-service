@@ -1,5 +1,7 @@
+const { Op } = require('sequelize');
 const { Service } = require('../models');
 const { makeSlug } = require('../utils/slugify');
+const { safeDeleteUpload } = require('../utils/uploads');
 
 async function listPublicServices(req, res) {
   const services = await Service.findAll({
@@ -39,13 +41,33 @@ async function getServiceApi(req, res) {
   res.json(services);
 }
 
+async function resolveUniqueSlug(rawSlug, title, excludeId) {
+  const base = makeSlug(rawSlug || title) || makeSlug(title) || `service-${Date.now()}`;
+  let candidate = base;
+  let suffix = 2;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const where = { slug: candidate };
+    if (excludeId) {
+      where.id = { [Op.ne]: excludeId };
+    }
+    const existing = await Service.findOne({ where });
+    if (!existing) {
+      return candidate;
+    }
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+}
+
 async function createService(req, res) {
-  const { title, description, price, priceUnit, icon, order, isActive } = req.body;
-  const slug = makeSlug(title);
+  const { title, description, price, priceUnit, icon, order, isActive, slug } = req.body;
+  const finalSlug = await resolveUniqueSlug(slug, title, null);
 
   const service = await Service.create({
     title,
-    slug,
+    slug: finalSlug,
     description,
     price: Number(price || 0),
     priceUnit: priceUnit || 'шт',
@@ -59,7 +81,7 @@ async function createService(req, res) {
 }
 
 async function updateService(req, res, service) {
-  const { title, description, price, priceUnit, icon, order, isActive } = req.body;
+  const { title, description, price, priceUnit, icon, order, isActive, slug, removeImage } = req.body;
   const updateData = {
     title,
     description,
@@ -70,12 +92,21 @@ async function updateService(req, res, service) {
     isActive: String(isActive) === 'on' || Boolean(isActive)
   };
 
-  if (title) {
-    updateData.slug = makeSlug(title);
+  const incomingSlug = (slug || '').trim();
+  if (incomingSlug && incomingSlug !== service.slug) {
+    updateData.slug = await resolveUniqueSlug(incomingSlug, title, service.id);
   }
 
   if (req.file) {
+    if (service.image) {
+      safeDeleteUpload(service.image);
+    }
     updateData.image = `/uploads/services/${req.file.filename}`;
+  } else if (removeImage === '1' || removeImage === 'on') {
+    if (service.image) {
+      safeDeleteUpload(service.image);
+    }
+    updateData.image = null;
   }
 
   await service.update(updateData);

@@ -43,9 +43,4 @@ async function createOrder(req, res) {
   }
 }
 
-async function listOrders(req, res) {
-  const orders = await Order.findAll({ order: [['createdAt', 'DESC']], raw: true });
-  return orders;
-}
-
-module.exports = { createOrder, listOrders };
+module.exports = { createOrder };

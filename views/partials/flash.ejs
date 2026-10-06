@@ -1,11 +1,26 @@
-<% if (flash && flash.success && flash.success.length) { %>
-  <div class="container">
-    <div class="alert alert-success"><%= flash.success[0] %></div>
-  </div>
-<% } %>
-
-<% if (flash && flash.error && flash.error.length) { %>
-  <div class="container">
-    <div class="alert alert-error"><%= flash.error[0] %></div>
-  </div>
+<%
+  const successMessages = (flash && flash.success) || [];
+  const errorMessages = (flash && flash.error) || [];
+%>
+<% if (successMessages.length || errorMessages.length) { %>
+<div class="toast-stack" role="status" aria-live="polite">
+  <% successMessages.forEach((message) => { %>
+    <div class="toast toast-success">
+      <i class="fa-solid fa-circle-check"></i>
+      <span><%= message %></span>
+      <button type="button" class="toast-close" aria-label="Закрыть уведомление">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  <% }) %>
+  <% errorMessages.forEach((message) => { %>
+    <div class="toast toast-error">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span><%= message %></span>
+      <button type="button" class="toast-close" aria-label="Закрыть уведомление">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  <% }) %>
+</div>
 <% } %>

@@ -11,6 +11,7 @@ const flash = require('connect-flash');
 const rateLimit = require('express-rate-limit');
 
 const { syncDatabase } = require('./config/db');
+const { getSettingsMap } = require('./controllers/homeController');
 const indexRouter = require('./routes/index');
 const servicesRouter = require('./routes/services');
 const galleryRouter = require('./routes/gallery');
@@ -40,14 +41,21 @@ app.use(flash());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   res.locals.flash = req.flash();
   res.locals.user = req.user || null;
   res.locals.currentYear = new Date().getFullYear();
+
+  try {
+    res.locals.settings = await getSettingsMap();
+  } catch (error) {
+    console.error('Settings load failed:', error.message);
+    res.locals.settings = {};
+  }
+
   next();
 });
 
@@ -81,6 +89,9 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err);
+  if (res.headersSent) {
+    return next(err);
+  }
   res.status(500).render('500', { title: 'Ошибка сервера', error: err.message });
 });
 

@@ -1,40 +1,46 @@
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= title %></title>
-    <link rel="stylesheet" href="/css/style.css" />
-  </head>
-  <body>
-    <div class="container" style="max-width: 520px; padding-top: 60px;">
-      <div class="theme-picker" aria-label="Выбор темы админки" style="margin-bottom: 18px;">
-        <span class="theme-label">Тема оформления</span>
-        <div class="theme-switcher">
-          <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
-          <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
-          <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
-          <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
+<%- include('./partials/start') %>
+
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="brand">
+        <span class="brand-mark"><i class="fa-solid fa-print"></i></span>
+        <span class="brand-text">Photo<span>Print</span></span>
+      </div>
+
+      <div class="login-title">
+        <h1>Вход в админку</h1>
+        <p>Панель управления PhotoPrint Service</p>
+      </div>
+
+      <%- include('../partials/flash') %>
+
+      <form method="POST" action="/admin/login">
+        <div class="form-grid">
+          <div>
+            <label for="login-username">Логин</label>
+            <input id="login-username" type="text" name="username" required autocomplete="username" placeholder="admin" />
+          </div>
+          <div>
+            <label for="login-password">Пароль</label>
+            <input id="login-password" type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg">
+            <i class="fa-solid fa-right-to-bracket"></i> Войти
+          </button>
+        </div>
+      </form>
+
+      <div class="login-foot">
+        <div class="login-theme">
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить тему">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </div>
+        <div style="margin-top: 14px;">
+          <a href="/" class="to-top"><i class="fa-solid fa-arrow-left"></i> Вернуться на сайт</a>
         </div>
       </div>
-      <div class="admin-card">
-        <h1>Вход в админку</h1>
-        <%- include('../partials/flash') %>
-        <form method="POST" action="/admin/login">
-          <div class="form-grid">
-            <div>
-              <label>Логин</label>
-              <input type="text" name="username" required />
-            </div>
-            <div>
-              <label>Пароль</label>
-              <input type="password" name="password" required />
-            </div>
-            <button type="submit" class="btn btn-primary">Войти</button>
-          </div>
-        </form>
-      </div>
     </div>
-    <script src="/js/main.js"></script>
-  </body>
-</html>
+  </div>
+
+<%- include('./partials/scripts') %>

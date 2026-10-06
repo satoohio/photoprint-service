@@ -1,84 +1,81 @@
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= title %></title>
-    <link rel="stylesheet" href="/css/style.css" />
-  </head>
-  <body>
-    <header class="topbar">
-      <div class="container navbar">
-        <a href="/admin" class="brand">
-          <span class="brand-mark">P</span>
-          <span>Admin Panel</span>
-        </a>
+<%- include('./partials/start') %>
+<%- include('./partials/topbar') %>
 
-        <div class="theme-picker" aria-label="Выбор темы админки">
-          <span class="theme-label">Тема оформления</span>
-          <div class="theme-switcher">
-            <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
-          </div>
-        </div>
-
-        <form method="POST" action="/admin/logout">
-          <button type="submit" class="btn btn-secondary">Выход</button>
-        </form>
-      </div>
-    </header>
-
-    <div class="container admin-shell">
-      <aside class="sidebar">
-        <a href="/admin">Дашборд</a>
-        <a href="/admin/services">Услуги</a>
-        <a href="/admin/gallery" class="active">Галерея</a>
-        <a href="/admin/orders">Заявки</a>
-        <a href="/admin/settings">Настройки</a>
-      </aside>
-
-      <main class="admin-content">
-        <%- include('../partials/flash') %>
-        <div class="admin-card">
-          <div class="section-head">
-            <h2>Галерея</h2>
-            <a href="/admin/gallery/new" class="btn btn-primary">Добавить элемент</a>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Название</th>
-                  <th>Тип</th>
-                  <th>Категория</th>
-                  <th>Порядок</th>
-                  <th>Действия</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% items.forEach((item) => { %>
-                  <tr>
-                    <td><%= item.title %></td>
-                    <td><%= item.type %></td>
-                    <td><%= item.category %></td>
-                    <td><%= item.order %></td>
-                    <td>
-                      <a href="/admin/gallery/<%= item.id %>/edit" class="btn btn-secondary">Редакт.</a>
-                      <form method="POST" action="/admin/gallery/<%= item.id %>/delete" style="display:inline;">
-                        <button type="submit" class="btn btn-primary">Удалить</button>
-                      </form>
-                    </td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </main>
+  <div class="page-header">
+    <div>
+      <h1>Галерея</h1>
+      <p class="page-sub">Примеры работ на сайте и в разделе «Галерея»</p>
     </div>
-    <script src="/js/main.js"></script>
-  </body>
-</html>
+    <a href="/admin/gallery/new" class="btn btn-primary">
+      <i class="fa-solid fa-plus"></i> Добавить элемент
+    </a>
+  </div>
+
+  <div class="admin-card">
+    <% if (!items.length) { %>
+      <div class="empty-state">
+        <i class="fa-regular fa-images"></i>
+        <h3>В галерее пока пусто</h3>
+        <p>Добавьте первые работы — они появятся на сайте.</p>
+        <a href="/admin/gallery/new" class="btn btn-primary">Добавить элемент</a>
+      </div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Элемент</th>
+              <th>Тип</th>
+              <th>Категория</th>
+              <th>Порядок</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% items.forEach((item) => { %>
+              <tr>
+                <td>
+                  <div class="cell-with-thumb">
+                    <% if (item.type === 'video') { %>
+                      <span class="table-thumb media-placeholder" title="Видео без превью"><i class="fa-solid fa-play"></i></span>
+                    <% } else { %>
+                      <img class="table-thumb" src="<%= item.url %>" alt="" />
+                    <% } %>
+                    <div>
+                      <span class="cell-title"><%= item.title %></span>
+                      <% if (item.description) { %>
+                        <span class="cell-sub truncate"><%= item.description %></span>
+                      <% } %>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <% if (item.type === 'video') { %>
+                    <span class="badge badge-neutral"><i class="fa-solid fa-video" style="font-size: 0.65rem;"></i> Видео</span>
+                  <% } else { %>
+                    <span class="badge badge-neutral"><i class="fa-regular fa-image" style="font-size: 0.65rem;"></i> Фото</span>
+                  <% } %>
+                </td>
+                <td><%= item.category %></td>
+                <td><%= item.order %></td>
+                <td>
+                  <div class="table-actions">
+                    <a href="/admin/gallery/<%= item.id %>/edit" class="btn btn-secondary btn-sm">
+                      <i class="fa-solid fa-pen"></i> Изменить
+                    </a>
+                    <form method="POST" action="/admin/gallery/<%= item.id %>/delete" style="display: inline;" data-confirm="Удалить «<%= item.title %>»?">
+                      <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fa-regular fa-trash-can"></i> Удалить
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+<%- include('./partials/end') %>

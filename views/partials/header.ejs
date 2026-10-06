@@ -1,38 +1,84 @@
+<%
+  var siteSettings = (typeof settings !== 'undefined' && settings) ? settings : {};
+  var siteName = siteSettings.siteName || 'PhotoPrint Service';
+  var phoneText = siteSettings.phone || '+7 (495) 123-45-67';
+  var phoneHref = 'tel:' + String(phoneText).replace(/[^\d+]/g, '');
+%>
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= title || 'PhotoPrint Service' %></title>
-    <meta name="description" content="Печать фотографий, копирование документов, оформление документов, набор текста." />
-    <link rel="stylesheet" href="/css/style.css" />
+    <title><%= title || siteName %></title>
+    <meta name="description" content="<%= typeof description !== 'undefined' && description ? description : 'Печать фотографий, копирование документов, оформление документов и набор текста — быстро и по доступной цене.' %>" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="<%= title || siteName %>" />
+    <meta property="og:description" content="Печать фотографий, копирование документов и оформление документов." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    <link rel="stylesheet" href="/css/tokens.css" />
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var legacy = localStorage.getItem('site-theme');
+          var theme = stored || (legacy === 'dark' ? 'dark' : null);
+          if (!theme) {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (error) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
   </head>
   <body>
-    <header class="topbar">
-      <div class="container navbar">
-        <a href="/" class="brand">
-          <span class="brand-mark">P</span>
-          <span>PhotoPrint</span>
+    <a class="skip-link" href="#main">К основному содержимому</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="/" class="brand" aria-label="PhotoPrint — на главную">
+          <span class="brand-mark"><i class="fa-solid fa-print"></i></span>
+          <span class="brand-text">Photo<span>Print</span></span>
         </a>
 
-        <nav class="nav-links" aria-label="Главная навигация">
-          <a href="/" class="<%= activePage === 'home' ? 'active' : '' %>">Главная</a>
-          <a href="/services" class="<%= activePage === 'services' ? 'active' : '' %>">Услуги</a>
-          <a href="/gallery" class="<%= activePage === 'gallery' ? 'active' : '' %>">Галерея</a>
-          <a href="/contacts" class="<%= activePage === 'contacts' ? 'active' : '' %>">Контакты</a>
+        <nav class="nav" id="site-nav" aria-label="Главная навигация">
+          <a href="/" class="nav-link <%= activePage === 'home' ? 'active' : '' %>">Главная</a>
+          <a href="/services" class="nav-link <%= activePage === 'services' ? 'active' : '' %>">Услуги</a>
+          <a href="/gallery" class="nav-link <%= activePage === 'gallery' ? 'active' : '' %>">Галерея</a>
+          <a href="/contacts" class="nav-link <%= activePage === 'contacts' ? 'active' : '' %>">Контакты</a>
         </nav>
 
-        <div class="theme-picker" aria-label="Выбор темы сайта">
-          <span class="theme-label">Тема оформления</span>
-          <div class="theme-switcher">
-            <button class="theme-btn active" type="button" data-theme-option="classic" aria-label="Классическая тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="dark" aria-label="Тёмная тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="forest" aria-label="Лесная тема"></button>
-            <button class="theme-btn" type="button" data-theme-option="sunset" aria-label="Закатная тема"></button>
-          </div>
+        <div class="header-actions">
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить тему">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <a class="phone-btn" href="<%= phoneHref %>">
+            <i class="fa-solid fa-phone"></i>
+            <span><%= phoneText %></span>
+          </a>
+          <button
+            class="burger"
+            type="button"
+            data-nav-toggle
+            aria-controls="site-nav"
+            aria-expanded="false"
+            aria-label="Открыть меню"
+          >
+            <span></span><span></span><span></span>
+          </button>
         </div>
-
-        <a class="phone-box" href="tel:+74951234567">+7 (495) 123-45-67</a>
       </div>
     </header>
 

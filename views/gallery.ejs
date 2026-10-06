@@ -1,49 +1,83 @@
-<%- include('./partials/header', { activePage: 'gallery', title: 'Галерея' }) %>
+<%- include('./partials/header', { activePage: 'gallery', title: 'Галерея работ', description: 'Примеры выполненных работ: фотопечать, печать документов, сканирование и копирование.' }) %>
 
-<section class="page-hero">
-  <div class="container">
-    <div class="breadcrumbs">Главная / Галерея</div>
-    <h1>Галерея работ</h1>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <div class="filter-bar">
-      <button class="filter-btn active" data-filter="all">Все</button>
-      <button class="filter-btn" data-filter="photo">Фото</button>
-      <button class="filter-btn" data-filter="print">Печать</button>
-      <button class="filter-btn" data-filter="docs">Документы</button>
+<main id="main">
+  <section class="page-hero">
+    <div class="container">
+      <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <a href="/">Главная</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span>Галерея</span>
+      </nav>
+      <h1>Галерея работ</h1>
+      <p class="lead">Нажмите на работу, чтобы открыть её в полноэкранном режиме.</p>
     </div>
+  </section>
 
-    <div class="gallery-grid">
-      <% items.forEach((item) => { %>
-        <figure
-          class="gallery-item"
-          data-gallery-item
-          data-category="<%= item.category || 'general' %>"
-          data-src="<%= item.url %>"
-          data-mime="<%= item.type || 'image' %>"
-          tabindex="0"
-        >
-          <% if (item.type === 'video') { %>
-            <video src="<%= item.url %>" muted playsinline preload="metadata"></video>
-          <% } else { %>
-            <img src="<%= item.url %>" alt="<%= item.title %>" />
-          <% } %>
-          <figcaption>
-            <strong><%= item.title %></strong>
-            <div class="text-muted"><%= item.description %></div>
-          </figcaption>
-        </figure>
-      <% }) %>
+  <section class="section">
+    <div class="container">
+      <div class="filter-bar" role="group" aria-label="Фильтр по категориям">
+        <button class="filter-chip active" type="button" data-filter="all">Все</button>
+        <% (categories || []).forEach((category) => { %>
+          <button class="filter-chip" type="button" data-filter="<%= category.value %>"><%= category.label %></button>
+        <% }) %>
+      </div>
+
+      <% if (!items.length) { %>
+        <div class="card empty-state">
+          <i class="fa-regular fa-images"></i>
+          <h3>В галерее пока нет работ</h3>
+          <p>Мы загружаем примеры — загляните позже.</p>
+          <a href="/" class="btn btn-secondary">На главную</a>
+        </div>
+      <% } else { %>
+        <div class="gallery-grid">
+          <% items.forEach((item) => { %>
+            <figure
+              class="gallery-item reveal"
+              data-gallery-item
+              data-category="<%= item.category || 'general' %>"
+              data-src="<%= item.url %>"
+              data-mime="<%= item.type || 'image' %>"
+              data-title="<%= item.title %>"
+              tabindex="0"
+            >
+              <% if (item.type === 'video') { %>
+                <video src="<%= item.url %>" muted playsinline preload="metadata"></video>
+                <span class="play-badge"><i class="fa-solid fa-play"></i></span>
+              <% } else { %>
+                <img src="<%= item.url %>" alt="<%= item.title %>" loading="lazy" />
+              <% } %>
+              <figcaption>
+                <strong><%= item.title %></strong>
+                <% if (item.description) { %>
+                  <div class="text-muted"><%= item.description %></div>
+                <% } %>
+              </figcaption>
+            </figure>
+          <% }) %>
+        </div>
+      <% } %>
     </div>
-  </div>
-</section>
+  </section>
 
-<div class="lightbox" id="lightbox">
-  <button class="lightbox-close" id="lightbox-close" aria-label="Закрыть">×</button>
-  <div class="lightbox-content" id="lightbox-image"></div>
-</div>
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Просмотр работы">
+    <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Закрыть">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <button class="lightbox-btn lightbox-prev" id="lightbox-prev" type="button" aria-label="Предыдущая работа">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <div class="lightbox-content">
+      <div id="lightbox-body"></div>
+      <div class="lightbox-caption">
+        <span id="lightbox-caption"></span>
+        <span class="lightbox-counter" id="lightbox-counter"></span>
+      </div>
+    </div>
+    <button class="lightbox-btn lightbox-next" id="lightbox-next" type="button" aria-label="Следующая работа">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+  </div>
+</main>
 
 <%- include('./partials/footer') %>

@@ -1,13 +1,55 @@
+<%
+  var siteSettings = (typeof settings !== 'undefined' && settings) ? settings : {};
+  var footerPhone = siteSettings.phone || '+7 (495) 123-45-67';
+  var footerPhoneHref = 'tel:' + String(footerPhone).replace(/[^\d+]/g, '');
+  var footerEmail = siteSettings.email || 'hello@photoprint.local';
+  var footerAddress = siteSettings.address || 'пгт. Яшкино, Суворово 8а';
+  var footerHours = siteSettings.workHours || 'Пн–Сб: 09:00–20:00';
+%>
     <footer class="site-footer">
-      <div class="container footer-row">
-        <div>
-          <strong>PhotoPrint Service</strong><br />
-          <span>Печать, копирование и оформление документов</span>
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="brand">
+            <span class="brand-mark"><i class="fa-solid fa-print"></i></span>
+            <span class="brand-text">Photo<span>Print</span></span>
+          </a>
+          <p>Печать фотографий, копирование и оформление документов для дома, офиса и бизнеса.</p>
         </div>
-        <div>© <%= currentYear %> Все права защищены.</div>
+
+        <div class="footer-col">
+          <h4>Навигация</h4>
+          <ul>
+            <li><a href="/">Главная</a></li>
+            <li><a href="/services">Услуги</a></li>
+            <li><a href="/gallery">Галерея</a></li>
+            <li><a href="/contacts">Контакты</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Контакты</h4>
+          <ul>
+            <li><a href="<%= footerPhoneHref %>"><%= footerPhone %></a></li>
+            <li><a href="mailto:<%= footerEmail %>"><%= footerEmail %></a></li>
+            <li><%= footerAddress %></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Режим работы</h4>
+          <ul>
+            <li><%= footerHours %></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="container footer-bottom">
+        <span>© <%= currentYear %> PhotoPrint Service. Все права защищены.</span>
+        <a href="#" class="to-top"><i class="fa-solid fa-arrow-up"></i> Наверх</a>
       </div>
     </footer>
 
+    <script src="/js/theme.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/gallery.js"></script>
   </body>

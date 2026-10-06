@@ -1,0 +1,27 @@
+<aside class="admin-sidebar" id="admin-sidebar" aria-label="Меню администратора">
+  <nav class="admin-nav">
+    <a href="/admin" class="admin-nav-link <%= activePage === 'dashboard' ? 'active' : '' %>">
+      <i class="fa-solid fa-chart-pie"></i> Дашборд
+    </a>
+    <a href="/admin/services" class="admin-nav-link <%= activePage === 'services' ? 'active' : '' %>">
+      <i class="fa-solid fa-layer-group"></i> Услуги
+    </a>
+    <a href="/admin/gallery" class="admin-nav-link <%= activePage === 'gallery' ? 'active' : '' %>">
+      <i class="fa-regular fa-images"></i> Галерея
+    </a>
+    <a href="/admin/orders" class="admin-nav-link <%= activePage === 'orders' ? 'active' : '' %>">
+      <i class="fa-solid fa-inbox"></i> Заявки
+    </a>
+    <a href="/admin/settings" class="admin-nav-link <%= activePage === 'settings' ? 'active' : '' %>">
+      <i class="fa-solid fa-gear"></i> Настройки
+    </a>
+
+    <div class="admin-nav-sep"></div>
+
+    <a href="/" class="admin-nav-link">
+      <i class="fa-solid fa-arrow-up-right-from-square"></i> Открыть сайт
+    </a>
+  </nav>
+
+  <div class="admin-sidebar-foot">PhotoPrint Service · v1.0</div>
+</aside>

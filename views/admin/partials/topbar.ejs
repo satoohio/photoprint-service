@@ -1,0 +1,43 @@
+    <header class="admin-topbar">
+      <div class="admin-topbar-inner">
+        <a href="/admin" class="brand">
+          <span class="brand-mark"><i class="fa-solid fa-print"></i></span>
+          <span class="brand-text">
+            PhotoPrint
+            <span class="admin-brand-sub">Панель управления</span>
+          </span>
+        </a>
+
+        <div class="admin-logout">
+          <button
+            class="admin-burger"
+            type="button"
+            data-nav-toggle="admin-sidebar"
+            aria-controls="admin-sidebar"
+            aria-expanded="false"
+            aria-label="Открыть меню"
+          >
+            <span></span><span></span><span></span>
+          </button>
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Переключить тему">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <% if (user && user.username) { %>
+            <span class="admin-user"><i class="fa-regular fa-user"></i> <%= user.username %></span>
+          <% } %>
+          <form method="POST" action="/admin/logout">
+            <button type="submit" class="btn btn-ghost">
+              <i class="fa-solid fa-right-from-bracket"></i> <span>Выйти</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-sidebar-backdrop" hidden></div>
+
+    <div class="admin-shell">
+      <%- include('./sidebar') %>
+
+      <main class="admin-content" id="admin-main">
+        <%- include('../../partials/flash') %>
