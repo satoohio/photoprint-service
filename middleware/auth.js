@@ -1,7 +1,15 @@
 const jwt = require('jsonwebtoken');
 
+function getJwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is required');
+  }
+  return secret;
+}
+
 function signToken(payload) {
-  return jwt.sign(payload, process.env.JWT_SECRET || 'photoprint-secret', {
+  return jwt.sign(payload, getJwtSecret(), {
     expiresIn: '30d'
   });
 }
@@ -15,7 +23,7 @@ function requireAuth(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'photoprint-secret');
+    const decoded = jwt.verify(token, getJwtSecret());
     req.user = decoded;
     res.locals.user = decoded;
     return next();

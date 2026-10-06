@@ -7,7 +7,10 @@ async function seed() {
   await syncDatabase();
 
   const username = process.env.ADMIN_USERNAME || 'admin';
-  const password = process.env.ADMIN_PASSWORD || 'Admin123!';
+  if (!process.env.ADMIN_PASSWORD) {
+    throw new Error('ADMIN_PASSWORD must be configured in .env before running seed');
+  }
+  const password = process.env.ADMIN_PASSWORD;
   const email = process.env.ADMIN_EMAIL || 'admin@photoprint.local';
 
   const [adminUser] = await User.findOrCreate({
@@ -67,7 +70,7 @@ async function seed() {
     });
   }
 
-  console.log(`Seed finished. Admin user created: ${username} / ${password}`);
+  console.log(`Seed finished. Admin user created: ${username}. Use the password from ADMIN_PASSWORD in .env.`);
 }
 
 seed().catch((error) => {

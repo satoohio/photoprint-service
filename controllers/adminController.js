@@ -294,7 +294,15 @@ async function saveSettings(req, res) {
   try {
     for (const key of ALLOWED_SETTING_KEYS) {
       if (!(key in req.body)) continue;
-      const value = String(req.body[key] ?? '');
+
+      let value = String(req.body[key] ?? '');
+
+      if (key === 'mapEmbed') {
+        const allowedPattern = /<iframe\s+[^>]*src=["'][^"']+["'][^>]*>\s*<\/iframe>/i;
+        if (!allowedPattern.test(value)) {
+          throw new Error('Недопустимый HTML-код карты');
+        }
+      }
 
       const existing = await Setting.findOne({ where: { key } });
       if (existing) {

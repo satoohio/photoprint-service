@@ -21,6 +21,10 @@ const apiRouter = require('./routes/api');
 
 const app = express();
 
+if (!process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET is required');
+}
+
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false
@@ -31,7 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'photoprint-session-secret',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { httpOnly: true, secure: false }
@@ -41,7 +45,18 @@ app.use(flash());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads'), {
+  index: false,
+  setHeaders(res, filePath) {
+    const forbiddenExtensions = ['.html', '.htm', '.svg', '.xml', '.js', '.json', '.css'];
+    const ext = path.extname(filePath).toLowerCase();
+
+    if (forbiddenExtensions.includes(ext)) {
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+    }
+  }
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(async (req, res, next) => {
