@@ -57,10 +57,10 @@ async function seed() {
   }
 
   const galleryItems = [
-    { title: 'Печать семейных фото', type: 'image', url: '/uploads/gallery/sample-1.svg', category: 'photo', description: 'Фотопечать и обработка кадра', order: 1 },
-    { title: 'Документальная печать', type: 'image', url: '/uploads/gallery/sample-2.svg', category: 'print', description: 'Печать документов и отчетов', order: 2 },
-    { title: 'Сканирование бумаг', type: 'image', url: '/uploads/gallery/sample-3.svg', category: 'docs', description: 'Подготовка и сканирование документов', order: 3 },
-    { title: 'Копировальный центр', type: 'image', url: '/uploads/gallery/sample-4.svg', category: 'print', description: 'Рабочий процесс и продуктивность', order: 4 }
+    { title: 'Печать семейных фото', type: 'image', url: '/gallery-placeholders/sample-1.svg', category: 'photo', description: 'Фотопечать и обработка кадра', order: 1 },
+    { title: 'Документальная печать', type: 'image', url: '/gallery-placeholders/sample-2.svg', category: 'print', description: 'Печать документов и отчетов', order: 2 },
+    { title: 'Сканирование бумаг', type: 'image', url: '/gallery-placeholders/sample-3.svg', category: 'docs', description: 'Подготовка и сканирование документов', order: 3 },
+    { title: 'Копировальный центр', type: 'image', url: '/gallery-placeholders/sample-4.svg', category: 'print', description: 'Рабочий процесс и продуктивность', order: 4 }
   ];
 
   for (const item of galleryItems) {
@@ -68,6 +68,17 @@ async function seed() {
       where: { title: item.title },
       defaults: item
     });
+
+    const sampleNumber = item.url.match(/sample-(\d+)\.svg$/)[1];
+    await GalleryItem.update(
+      { url: item.url },
+      {
+        where: {
+          title: item.title,
+          url: `/uploads/gallery/sample-${sampleNumber}.svg`
+        }
+      }
+    );
   }
 
   console.log(`Seed finished. Admin user created: ${username}. Use the password from ADMIN_PASSWORD in .env.`);

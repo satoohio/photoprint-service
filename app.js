@@ -45,6 +45,23 @@ app.use(flash());
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+const legacyPlaceholderFiles = {
+  '/uploads/gallery/sample-1.svg': 'sample-1.svg',
+  '/uploads/gallery/sample-2.svg': 'sample-2.svg',
+  '/uploads/gallery/sample-3.svg': 'sample-3.svg',
+  '/uploads/gallery/sample-4.svg': 'sample-4.svg',
+  '/uploads/services/service-default.svg': 'service-default.svg'
+};
+
+app.get(Object.keys(legacyPlaceholderFiles), (req, res, next) => {
+  res.sendFile(
+    path.join(__dirname, 'public', 'gallery-placeholders', legacyPlaceholderFiles[req.path]),
+    (error) => {
+      if (error) next(error);
+    }
+  );
+});
+
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads'), {
   index: false,
   setHeaders(res, filePath) {
