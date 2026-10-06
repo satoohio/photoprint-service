@@ -12,6 +12,26 @@ document.addEventListener('DOMContentLoaded', () => {
   let visibleItems = allItems;
   let currentIndex = 0;
   let lastFocused = null;
+  const fallbackImage = '/gallery-placeholders/sample-1.svg';
+
+  const handleMediaError = (element) => {
+    if (element.tagName === 'IMG') {
+      if (element.getAttribute('src') === fallbackImage) return;
+      element.addEventListener('error', () => {
+        element.src = fallbackImage;
+      }, { once: true });
+      if (element.complete && element.naturalWidth === 0) {
+        element.src = fallbackImage;
+      }
+    } else if (element.tagName === 'VIDEO') {
+      element.poster = fallbackImage;
+      element.addEventListener('error', () => {
+        element.pause();
+        element.removeAttribute('src');
+        element.load();
+      }, { once: true });
+    }
+  };
 
   const renderCounter = () => {
     if (lightboxCounter) {
@@ -27,10 +47,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const mime = item.getAttribute('data-mime');
     const title = item.getAttribute('data-title') || '';
 
+    lightboxBody.replaceChildren();
+
     if (mime === 'video') {
-      lightboxBody.innerHTML = `<video controls autoplay playsinline src="${src}"></video>`;
+      const video = document.createElement('video');
+      video.controls = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      handleMediaError(video);
+      if (src) video.src = src;
+      lightboxBody.append(video);
     } else {
-      lightboxBody.innerHTML = `<img src="${src}" alt="${title}" />`;
+      const image = document.createElement('img');
+      image.alt = title;
+      handleMediaError(image);
+      image.src = src || fallbackImage;
+      lightboxBody.append(image);
     }
 
     if (lightboxCaption) lightboxCaption.textContent = title;
@@ -77,6 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   allItems.forEach((item) => {
+    const thumbnail = item.querySelector('img, video');
+    if (thumbnail) handleMediaError(thumbnail);
+
     item.addEventListener('click', () => openLightbox(item));
     item.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
