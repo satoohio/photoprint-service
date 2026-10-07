@@ -1,4 +1,4 @@
-const { Op } = require('sequelize');
+const { Op } = require('../utils/operators');
 const { Service, GalleryItem, Order, Setting } = require('../models');
 const { createService, updateService } = require('./serviceController');
 const { createGalleryItem } = require('./galleryController');
@@ -74,6 +74,7 @@ async function saveService(req, res) {
     req.flash('success', 'Услуга добавлена');
     return res.redirect('/admin/services');
   } catch (error) {
+    if (req.file) await safeDeleteUpload(`/uploads/services/${req.file.filename}`);
     req.flash('error', 'Ошибка при сохранении услуги');
     return res.redirect(id ? `/admin/services/${id}/edit` : '/admin/services/new');
   }
@@ -88,11 +89,8 @@ async function deleteService(req, res) {
     return res.redirect('/admin/services');
   }
 
-  if (service.image) {
-    safeDeleteUpload(service.image);
-  }
-
   await service.destroy();
+  if (service.image) await safeDeleteUpload(service.image);
   req.flash('success', 'Услуга удалена');
   return res.redirect('/admin/services');
 }
@@ -141,6 +139,7 @@ async function saveGallery(req, res) {
       }
 
       const { title, category, description, order, type, removeFile } = req.body;
+      const previousFile = item.url;
       const updateData = {
         title,
         category: category || 'general',
@@ -150,16 +149,15 @@ async function saveGallery(req, res) {
       };
 
       if (req.file) {
-        if (item.url) safeDeleteUpload(item.url);
         updateData.url = `/uploads/gallery/${req.file.filename}`;
         updateData.thumbnail = null;
       } else if (removeFile === '1' || removeFile === 'on') {
-        if (item.url) safeDeleteUpload(item.url);
         updateData.url = '';
         updateData.thumbnail = null;
       }
 
       await item.update(updateData);
+      if ('url' in updateData && previousFile) await safeDeleteUpload(previousFile);
       req.flash('success', 'Элемент галереи обновлён');
       return res.redirect('/admin/gallery');
     }
@@ -168,6 +166,7 @@ async function saveGallery(req, res) {
     req.flash('success', 'Элемент галереи добавлен');
     return res.redirect('/admin/gallery');
   } catch (error) {
+    if (req.file) await safeDeleteUpload(`/uploads/gallery/${req.file.filename}`);
     req.flash('error', 'Ошибка при сохранении файла галереи');
     return res.redirect(id ? `/admin/gallery/${id}/edit` : '/admin/gallery/new');
   }
@@ -182,11 +181,8 @@ async function deleteGallery(req, res) {
     return res.redirect('/admin/gallery');
   }
 
-  if (item.url) {
-    safeDeleteUpload(item.url);
-  }
-
   await item.destroy();
+  if (item.url) await safeDeleteUpload(item.url);
   req.flash('success', 'Элемент удалён');
   return res.redirect('/admin/gallery');
 }

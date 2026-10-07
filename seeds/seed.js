@@ -1,27 +1,9 @@
 require('dotenv').config();
-const bcrypt = require('bcryptjs');
 const { syncDatabase } = require('../config/db');
-const { User, Service, GalleryItem, Setting } = require('../models');
+const { Service, GalleryItem, Setting } = require('../models');
 
 async function seed() {
   await syncDatabase();
-
-  const username = process.env.ADMIN_USERNAME || 'admin';
-  if (!process.env.ADMIN_PASSWORD) {
-    throw new Error('ADMIN_PASSWORD must be configured in .env before running seed');
-  }
-  const password = process.env.ADMIN_PASSWORD;
-  const email = process.env.ADMIN_EMAIL || 'admin@photoprint.local';
-
-  const [adminUser] = await User.findOrCreate({
-    where: { username },
-    defaults: {
-      username,
-      email,
-      passwordHash: await bcrypt.hash(password, 10),
-      role: 'admin'
-    }
-  });
 
   const defaultSettings = [
     ['siteName', 'PhotoPrint Service'],
@@ -81,10 +63,10 @@ async function seed() {
     );
   }
 
-  console.log(`Seed finished. Admin user created: ${username}. Use the password from ADMIN_PASSWORD in .env.`);
+  console.log('Default site content initialized. Administrators are managed in Netlify Identity.');
 }
 
 seed().catch((error) => {
-  console.error('Seed failed:', error);
+  console.error('Seed failed. Check Netlify Database configuration.');
   process.exit(1);
 });

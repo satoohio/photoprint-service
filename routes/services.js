@@ -1,9 +1,10 @@
 const express = require('express');
 const { listPublicServices, showSingleService } = require('../controllers/serviceController');
+const asyncHandler = require('../utils/asyncHandler');
 
 const router = express.Router();
 
-router.get('/', listPublicServices);
-router.get('/:slug', showSingleService);
+router.get('/', asyncHandler(listPublicServices));
+router.get('/:slug', asyncHandler(showSingleService));
 
 module.exports = router;

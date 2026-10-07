@@ -1,28 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const { Sequelize } = require('sequelize');
-
-const dataDir = path.join(__dirname, '../data');
-fs.mkdirSync(dataDir, { recursive: true });
-
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: path.join(dataDir, 'photoprint.sqlite'),
-  logging: false,
-  define: {
-    timestamps: true
-  }
-});
-
 async function syncDatabase() {
-  try {
-    await sequelize.authenticate();
-    await sequelize.sync({ alter: true, force: false });
-    return sequelize;
-  } catch (error) {
-    console.error('Database connection failed:', error.message);
-    throw error;
-  }
+  const { db } = await import('../db/index.ts');
+  const { sql } = await import('drizzle-orm');
+  await db.execute(sql`select 1`);
+  return db;
 }
 
-module.exports = { sequelize, syncDatabase };
+module.exports = { syncDatabase };

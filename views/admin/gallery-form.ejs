@@ -57,7 +57,7 @@
           <div>
             <label for="g-media">Файл</label>
             <input id="g-media" type="file" name="media" accept="image/*,video/mp4" <%= item ? '' : 'required' %> />
-            <div class="form-hint">JPG, PNG, WEBP или MP4, до 25 МБ.</div>
+            <div class="form-hint">JPG, PNG, WEBP или MP4, до 4 МБ.</div>
           </div>
           <% if (item && item.url) { %>
             <div class="file-preview">

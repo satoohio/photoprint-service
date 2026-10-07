@@ -1,5 +1,5 @@
 const express = require('express');
-const rateLimit = require('express-rate-limit');
+const { createLimiter } = require('../middleware/rateLimit');
 const { body } = require('express-validator');
 const asyncHandler = require('../utils/asyncHandler');
 const { getServiceApi } = require('../controllers/serviceController');
@@ -7,7 +7,7 @@ const { getGalleryApi } = require('../controllers/galleryController');
 const { createOrder } = require('../controllers/orderController');
 
 const router = express.Router();
-const orderLimiter = rateLimit({
+const orderLimiter = createLimiter('orders', {
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: 'Слишком много заявок. Попробуйте позже.'

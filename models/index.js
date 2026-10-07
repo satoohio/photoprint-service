@@ -1,15 +1,8 @@
-const { sequelize } = require('../config/db');
-const { Service } = require('./Service');
-const { GalleryItem } = require('./GalleryItem');
-const { Order } = require('./Order');
-const { User } = require('./User');
-const { Setting } = require('./Setting');
+const { createModel } = require('./repository');
 
 module.exports = {
-  sequelize,
-  Service,
-  GalleryItem,
-  Order,
-  User,
-  Setting
+  Service: createModel('Service'),
+  GalleryItem: createModel('GalleryItem'),
+  Order: createModel('Order'),
+  Setting: createModel('Setting')
 };

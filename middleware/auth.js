@@ -1,36 +1,21 @@
-const jwt = require('jsonwebtoken');
-
-function getJwtSecret() {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET is required');
-  }
-  return secret;
-}
-
-function signToken(payload) {
-  return jwt.sign(payload, getJwtSecret(), {
-    expiresIn: '30d'
-  });
-}
-
-function requireAuth(req, res, next) {
-  const token = req.cookies.auth_token;
-
-  if (!token) {
-    req.flash('error', 'Требуется авторизация');
-    return res.redirect('/admin/login');
-  }
-
+async function requireAuth(req, res, next) {
   try {
-    const decoded = jwt.verify(token, getJwtSecret());
-    req.user = decoded;
-    res.locals.user = decoded;
+    const { getUser, refreshSession } = await import('@netlify/identity');
+    await refreshSession();
+    const user = await getUser();
+    if (!user) {
+      req.flash('error', 'Требуется авторизация');
+      return res.redirect('/admin/login');
+    }
+    if (!user.roles?.includes('admin')) {
+      return res.status(403).render('403', { title: 'Доступ запрещён' });
+    }
+    req.user = { ...user, username: user.name || user.email };
+    res.locals.user = req.user;
     return next();
   } catch (error) {
-    req.flash('error', 'Сессия истекла. Войдите снова.');
-    return res.redirect('/admin/login');
+    return next(error);
   }
 }
 
-module.exports = { requireAuth, signToken };
+module.exports = { requireAuth };
