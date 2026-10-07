@@ -1,9 +1,9 @@
 const express = require('express');
-const rateLimit = require('express-rate-limit');
+const { createLimiter } = require('../middleware/rateLimit');
 const asyncHandler = require('../utils/asyncHandler');
 const { requireAuth } = require('../middleware/auth');
 const { uploadServiceImage, uploadGalleryMedia } = require('../middleware/upload');
-const { loginPage, loginUser, logoutUser } = require('../controllers/authController');
+const { loginPage, loginUser, logoutUser, acceptInvitation } = require('../controllers/authController');
 const {
   renderDashboard,
   renderServicesPage,
@@ -23,7 +23,7 @@ const {
 
 const router = express.Router();
 
-const authLimiter = rateLimit({
+const authLimiter = createLimiter('auth', {
   windowMs: 15 * 60 * 1000,
   max: 5,
   standardHeaders: true,
@@ -41,8 +41,10 @@ function handleUpload(uploadMiddleware) {
         return next();
       }
 
-      const message = err.message || 'Ошибка загрузки файла';
-      const section = req.baseUrl.includes('gallery') ? 'gallery' : 'services';
+      const message = err.code === 'LIMIT_FILE_SIZE'
+        ? 'Максимальный размер файла — 4 МБ.'
+        : err.message || 'Ошибка загрузки файла';
+      const section = req.path.includes('gallery') ? 'gallery' : 'services';
       req.flash('error', message);
       return res.redirect(req.params.id ? `/admin/${section}/${req.params.id}/edit` : `/admin/${section}/new`);
     });
@@ -51,6 +53,7 @@ function handleUpload(uploadMiddleware) {
 
 router.get('/login', asyncHandler(loginPage));
 router.post('/login', authLimiter, asyncHandler(loginUser));
+router.post('/invite', authLimiter, asyncHandler(acceptInvitation));
 router.post('/logout', asyncHandler(logoutUser));
 
 router.use(requireAuth);

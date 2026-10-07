@@ -27,7 +27,7 @@ async function createOrder(req, res) {
     try {
       await sendOrderNotification(order.toJSON());
     } catch (mailError) {
-      console.error('Mail send failed:', mailError.message);
+      console.error('Mail send failed');
     }
 
     return res.status(201).json({

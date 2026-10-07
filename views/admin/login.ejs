@@ -17,8 +17,8 @@
       <form method="POST" action="/admin/login">
         <div class="form-grid">
           <div>
-            <label for="login-username">Логин</label>
-            <input id="login-username" type="text" name="username" required autocomplete="username" placeholder="admin" />
+            <label for="login-email">Email</label>
+            <input id="login-email" type="email" name="email" required autocomplete="username" placeholder="Email администратора" />
           </div>
           <div>
             <label for="login-password">Пароль</label>
@@ -44,3 +44,4 @@
   </div>
 
 <%- include('./partials/scripts') %>
+<script src="/js/identity.js"></script>

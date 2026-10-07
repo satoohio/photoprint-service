@@ -10,6 +10,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error('Failed to start server:', error);
+  console.error('Failed to start server. Check Netlify Database configuration.');
   process.exit(1);
 });

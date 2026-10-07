@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
+  if (new URLSearchParams(window.location.hash.slice(1)).has('invite_token') && window.location.pathname !== '/admin/login') {
+    window.location.replace(`/admin/login${window.location.hash}`);
+    return;
+  }
   /* ---------- Mobile navigation ---------- */
 
   const setBackdropOpen = (open) => {

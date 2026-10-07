@@ -1,4 +1,4 @@
-const { Op } = require('sequelize');
+const { Op } = require('../utils/operators');
 const { Service } = require('../models');
 const { makeSlug } = require('../utils/slugify');
 const { safeDeleteUpload } = require('../utils/uploads');
@@ -93,23 +93,19 @@ async function updateService(req, res, service) {
   };
 
   const incomingSlug = (slug || '').trim();
+  const previousImage = service.image;
   if (incomingSlug && incomingSlug !== service.slug) {
     updateData.slug = await resolveUniqueSlug(incomingSlug, title, service.id);
   }
 
   if (req.file) {
-    if (service.image) {
-      safeDeleteUpload(service.image);
-    }
     updateData.image = `/uploads/services/${req.file.filename}`;
   } else if (removeImage === '1' || removeImage === 'on') {
-    if (service.image) {
-      safeDeleteUpload(service.image);
-    }
     updateData.image = null;
   }
 
   await service.update(updateData);
+  if ('image' in updateData && previousImage) await safeDeleteUpload(previousImage);
   return service;
 }
 
