@@ -1,6 +1,19 @@
 CREATE TYPE "gallery_type" AS ENUM('image', 'video');
 CREATE TYPE "order_status" AS ENUM('new', 'in_progress', 'done');
 
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'photoprint-uploads',
+  'photoprint-uploads',
+  false,
+  4194304,
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'video/mp4']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
 CREATE TABLE "gallery_items" (
   "id" serial PRIMARY KEY,
   "title" text NOT NULL,
@@ -54,23 +67,6 @@ CREATE TABLE "settings" (
   "created_at" timestamp with time zone DEFAULT now() NOT NULL,
   "updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
-
-CREATE TABLE "admin_users" (
-  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  "email" text NOT NULL UNIQUE,
-  "password_hash" text NOT NULL,
-  "created_at" timestamp with time zone DEFAULT now() NOT NULL,
-  "updated_at" timestamp with time zone DEFAULT now() NOT NULL
-);
-
-CREATE TABLE "admin_sessions" (
-  "token_hash" text PRIMARY KEY,
-  "user_id" uuid NOT NULL REFERENCES "admin_users"("id") ON DELETE CASCADE,
-  "expires_at" timestamp with time zone NOT NULL,
-  "created_at" timestamp with time zone DEFAULT now() NOT NULL
-);
-
-CREATE INDEX "admin_sessions_expires_at_idx" ON "admin_sessions" ("expires_at");
 
 INSERT INTO settings (key, value) VALUES
   ('siteName', 'PhotoPrint Service'),

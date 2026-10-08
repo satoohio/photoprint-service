@@ -68,6 +68,7 @@ app.get(Object.keys(legacyPlaceholderFiles), (req, res, next) => {
   );
 });
 
+app.get('/uploads/:section/:filename', asyncHandler(require('./utils/uploads').serveUpload));
 app.use(express.static(path.join(projectRoot, 'public')));
 
 app.use((req, res, next) => {

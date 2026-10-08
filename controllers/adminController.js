@@ -74,7 +74,7 @@ async function saveService(req, res) {
     req.flash('success', 'Услуга добавлена');
     return res.redirect('/admin/services');
   } catch (error) {
-    if (req.file) await safeDeleteUpload(req.file.url);
+    if (req.file) await safeDeleteUpload(`/uploads/services/${req.file.filename}`);
     req.flash('error', 'Ошибка при сохранении услуги');
     return res.redirect(id ? `/admin/services/${id}/edit` : '/admin/services/new');
   }
@@ -149,7 +149,7 @@ async function saveGallery(req, res) {
       };
 
       if (req.file) {
-        updateData.url = req.file.url;
+        updateData.url = `/uploads/gallery/${req.file.filename}`;
         updateData.thumbnail = null;
       } else if (removeFile === '1' || removeFile === 'on') {
         updateData.url = '';
@@ -166,7 +166,7 @@ async function saveGallery(req, res) {
     req.flash('success', 'Элемент галереи добавлен');
     return res.redirect('/admin/gallery');
   } catch (error) {
-    if (req.file) await safeDeleteUpload(req.file.url);
+    if (req.file) await safeDeleteUpload(`/uploads/gallery/${req.file.filename}`);
     req.flash('error', 'Ошибка при сохранении файла галереи');
     return res.redirect(id ? `/admin/gallery/${id}/edit` : '/admin/gallery/new');
   }

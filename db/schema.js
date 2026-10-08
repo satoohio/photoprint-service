@@ -1,4 +1,4 @@
-const { pgTable, serial, text, integer, boolean, doublePrecision, timestamp, pgEnum, uuid, index } = require('drizzle-orm/pg-core');
+const { pgTable, serial, text, integer, boolean, doublePrecision, timestamp, pgEnum } = require('drizzle-orm/pg-core');
 
 const timestamps = () => ({
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -58,23 +58,6 @@ const rateLimits = pgTable('rate_limits', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull()
 });
 
-const adminUsers = pgTable('admin_users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  email: text('email').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
-});
-
-const adminSessions = pgTable('admin_sessions', {
-  tokenHash: text('token_hash').primaryKey(),
-  userId: uuid('user_id').notNull().references(() => adminUsers.id, { onDelete: 'cascade' }),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
-}, (table) => ({
-  expiresAtIdx: index('admin_sessions_expires_at_idx').on(table.expiresAt)
-}));
-
 module.exports = {
   galleryType,
   orderStatus,
@@ -82,7 +65,5 @@ module.exports = {
   galleryItems,
   orders,
   settings,
-  rateLimits,
-  adminUsers,
-  adminSessions
+  rateLimits
 };

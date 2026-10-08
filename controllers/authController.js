@@ -8,41 +8,38 @@ async function loginUser(req, res) {
     req.flash('error', 'Введите email и пароль');
     return res.redirect('/admin/login');
   }
-  const {
-    normalizeEmail,
-    verifyPassword,
-    getDummyPasswordHash,
-    createSession,
-    SESSION_COOKIE,
-    SESSION_DURATION_MS,
-    cookieOptions
-  } = require('../utils/adminAuth');
-  const { pool } = require('../db');
-  const { rows } = await pool.query(
-    'SELECT id, email, password_hash FROM admin_users WHERE email = $1',
-    [normalizeEmail(email)]
-  );
-  const admin = rows[0];
-  const validPassword = await verifyPassword(password, admin?.password_hash || await getDummyPasswordHash());
-  if (!admin || !validPassword) {
-    req.flash('error', 'Неверный email или пароль.');
+  const { createPublicSupabaseClient } = require('../utils/supabase');
+  const supabase = createPublicSupabaseClient();
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.user || !data.session) {
+    req.flash('error', 'Не удалось войти. Проверьте email, пароль и подтверждение аккаунта.');
     return res.redirect('/admin/login');
   }
 
-  const session = await createSession(admin.id);
-  res.cookie(SESSION_COOKIE, session.token, {
-    ...cookieOptions(req),
-    maxAge: SESSION_DURATION_MS
+  if (data.user.app_metadata?.role !== 'admin') {
+    req.flash('error', 'Для входа требуется роль admin в настройках пользователя Supabase.');
+    return res.redirect('/admin/login');
+  }
+
+  const secure = req.secure || process.env.NODE_ENV === 'production';
+  const cookieOptions = { httpOnly: true, secure, sameSite: 'lax', path: '/' };
+  res.cookie('sb-access-token', data.session.access_token, {
+    ...cookieOptions,
+    maxAge: data.session.expires_in * 1000
+  });
+  res.cookie('sb-refresh-token', data.session.refresh_token, {
+    ...cookieOptions,
+    maxAge: 30 * 24 * 60 * 60 * 1000
   });
   req.flash('success', 'Добро пожаловать');
   return res.redirect('/admin');
 }
 
 async function logoutUser(req, res) {
-  const { SESSION_COOKIE, deleteSession, cookieOptions } = require('../utils/adminAuth');
-  const token = req.cookies[SESSION_COOKIE];
-  if (token) await deleteSession(token);
-  res.clearCookie(SESSION_COOKIE, cookieOptions(req));
+  const secure = req.secure || process.env.NODE_ENV === 'production';
+  const cookieOptions = { httpOnly: true, secure, sameSite: 'lax', path: '/' };
+  res.clearCookie('sb-access-token', cookieOptions);
+  res.clearCookie('sb-refresh-token', cookieOptions);
   req.flash('success', 'Вы вышли из системы');
   return res.redirect('/admin/login');
 }

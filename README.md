@@ -1,50 +1,59 @@
 # PhotoPrint Service
 
-Сайт фотопечати на Express и EJS. Приложение разворачивается на Vercel, данные хранит в PostgreSQL, изображения и видео — в Vercel Blob, а вход администратора обрабатывается самим приложением.
+Сайт фотопечати на Express и EJS. Приложение разворачивается на Vercel, данные хранит в Supabase Postgres, загруженные изображения и видео — в Supabase Storage, а вход администратора обрабатывается Supabase Auth.
 
-## Настройка сервисов
+## Настройка Supabase
 
-Создайте PostgreSQL database у любого провайдера и Vercel Blob store. Задайте переменные окружения:
+Создайте проект Supabase и задайте переменные окружения:
 
 | Переменная | Где взять |
 | --- | --- |
-| `DATABASE_URL` | Строка подключения PostgreSQL. Для Vercel используйте serverless/transaction pooler, если провайдер его предлагает; включите SSL согласно его инструкциям |
-| `BLOB_READ_WRITE_TOKEN` | Токен Vercel Blob store; в проекте Vercel его можно подключить к окружениям автоматически |
+| `DATABASE_URL` | Supabase → **Connect** → строка Postgres для serverless/transaction pooler; добавьте `sslmode=require` |
+| `SUPABASE_URL` | Project Settings → API → Project URL |
+| `SUPABASE_ANON_KEY` | Project Settings → API → anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Project Settings → API → service_role key |
+| `SUPABASE_STORAGE_BUCKET` | Необязательно; по умолчанию `photoprint-uploads` |
 
-Примените [`db/migrations/20261008000000_create_photoprint_tables.sql`](./db/migrations/20261008000000_create_photoprint_tables.sql) к PostgreSQL один раз, например командой `psql "$DATABASE_URL" -f db/migrations/20261008000000_create_photoprint_tables.sql`. Миграция создаёт таблицы и начальные демонстрационные записи.
+Выполните SQL из [`supabase/migrations/20261008000000_create_photoprint_tables.sql`](./supabase/migrations/20261008000000_create_photoprint_tables.sql) в Supabase SQL Editor. Он создаёт таблицы, исходные демонстрационные услуги, настройки и элементы галереи, а также приватный bucket `photoprint-uploads` с лимитом 4 МБ и разрешёнными типами `image/jpeg`, `image/png`, `image/webp`, `video/mp4`.
 
-Загруженные фотографии и видео хранятся как публичные Blob-файлы, поскольку используются на страницах сайта. Максимальный размер файла — 4 МБ; разрешены JPG, PNG, WEBP и MP4.
+Файлы читаются через серверный маршрут `/uploads/...`; bucket не должен быть публичным. Ключ `SUPABASE_SERVICE_ROLE_KEY` используется только на сервере — никогда не добавляйте его в клиентский JavaScript.
 
 ### Администратор
 
-Задайте `ADMIN_EMAIL` и `ADMIN_PASSWORD` в локальном `.env`, примените миграцию, затем создайте или смените учетные данные:
+В Supabase Auth создайте пользователя с надёжным паролем и подтвердите его email. Затем задайте ему серверную роль `admin` через Supabase SQL Editor:
 
-```bash
-npm run admin:create
+```sql
+UPDATE auth.users
+SET raw_app_meta_data = COALESCE(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'::jsonb
+WHERE email = 'admin@example.com';
 ```
 
-Пароль должен содержать не менее 12 символов; в базе хранится только его хеш. Эти переменные нужны только для запуска команды создания администратора и не должны добавляться в Vercel. После команды удалите пароль из локального `.env`. Вход в панель: `/admin/login`; сессии хранятся в PostgreSQL и действуют 7 дней.
+Замените email на адрес созданного администратора. Роль хранится в `app_metadata`, которое пользователь не может изменить через обычный клиентский API. Вход в панель: `/admin/login`.
 
 ## Размещение на Vercel
 
-Импортируйте репозиторий в Vercel, подключите Blob store и задайте `DATABASE_URL` для нужных окружений. Для production укажите production-домен в `BASE_URL` (например, `https://example.com`), чтобы sitemap использовал постоянный адрес сайта. Vercel обслуживает Express-приложение из корневого `app.js`.
+В Vercel откройте проект → **Settings → Environment Variables** и добавьте `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY` и `SUPABASE_SERVICE_ROLE_KEY` для окружения **Production**. `DATABASE_URL` скопируйте из **Supabase → Connect**; используйте строку Postgres с session/transaction pooler и SSL (`sslmode=require`). `SUPABASE_URL` и API keys находятся в **Project Settings → API**. Не используйте service role key как anon key и не вставляйте service role key в клиентский код.
+
+После сохранения переменных запустите новый production deployment: существующие deployments не получают обновлённые переменные автоматически. Если лог по-прежнему говорит `DATABASE_URL is required`, значит deployment не получил `DATABASE_URL` в своём Production окружении. Если приложение подключилось к базе, но сообщает об отсутствующих таблицах или типах, сначала выполните SQL-миграцию из раздела настройки Supabase.
+
+Для production укажите production-домен в `BASE_URL` (например, `https://example.com`), чтобы sitemap использовал постоянный адрес сайта. Vercel обслуживает Express-приложение из корневого `app.js`.
 
 Локальный запуск:
 
 ```bash
 npm install
 cp .env.example .env
-# Заполните DATABASE_URL и BLOB_READ_WRITE_TOKEN в .env
+# Заполните Supabase-переменные в .env
 npm start
 ```
 
 Для локальной разработки можно использовать `npm run dev`. `npm run seed` повторно добавляет отсутствующие начальные записи; он не создаёт пользователей и не сбрасывает существующие настройки.
 
-При изменении схемы добавляйте новую SQL-миграцию в `db/migrations/` и применяйте её к PostgreSQL.
+При изменении схемы добавляйте новую SQL-миграцию в `supabase/migrations/`, проверяйте её и применяйте в Supabase SQL Editor.
 
 ## Данные из предыдущего размещения
 
-Миграция создаёт схему и демонстрационные записи, но не переносит существующие данные из прежней базы и файлы из старого хранилища. Экспортируйте и импортируйте реальные заказы, настройки, услуги и записи галереи отдельно; скопируйте сами файлы в Vercel Blob и обновите ссылки в БД до переключения production-трафика.
+Схема и демонстрационные записи создаются новой миграцией, но данные и загруженные файлы из прежних Netlify Database и Netlify Blobs автоматически не копируются. Если на старом размещении есть реальные заказы, настройки, услуги или файлы, экспортируйте и перенесите их в Supabase отдельно до переключения production-трафика.
 
 ## Дополнительные настройки
 

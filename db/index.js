@@ -5,7 +5,7 @@ const schema = require('./schema');
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error('DATABASE_URL is required to connect to PostgreSQL');
+  throw new Error('DATABASE_URL is required to connect to Supabase Postgres');
 }
 
 const pool = new Pool({ connectionString, max: 1 });

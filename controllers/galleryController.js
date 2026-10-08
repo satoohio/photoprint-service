@@ -51,7 +51,7 @@ async function getGalleryApi(req, res) {
 async function createGalleryItem(req, res) {
   if (!req.file) throw new Error('Загрузите файл галереи');
   const { title, category, description, order, type } = req.body;
-  const filePath = req.file.url;
+  const filePath = `/uploads/gallery/${req.file.filename}`;
 
   return GalleryItem.create({
     title,

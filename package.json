@@ -6,11 +6,10 @@
   "scripts": {
     "start": "node --import tsx server.js",
     "dev": "tsx watch server.js",
-    "seed": "node --import tsx seeds/seed.js",
-    "admin:create": "node --import tsx seeds/createAdmin.js"
+    "seed": "node --import tsx seeds/seed.js"
   },
   "dependencies": {
-    "@vercel/blob": "^2.8.1",
+    "@supabase/supabase-js": "^2.117.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
