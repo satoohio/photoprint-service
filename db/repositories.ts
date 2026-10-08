@@ -1,22 +1,44 @@
-import { and, or, eq, ne, ilike, asc, desc, count, sql } from 'drizzle-orm';
-import { db } from './index.ts';
-import { services, galleryItems, orders, settings, rateLimits } from './schema.ts';
+import { and, or, eq, asc, desc, count, sql } from 'drizzle-orm';
+import { db } from './index';
+import { services, galleryItems, orders, settings, rateLimits } from './schema';
 import operators from '../utils/operators.js';
 
 const { Op } = operators;
 
-function condition(table, where = {}) {
+type QueryWhere = Record<PropertyKey, unknown>;
+
+type FindOptions = {
+  attributes?: string[];
+  where?: QueryWhere;
+  order?: [string, string][];
+  limit?: number;
+  raw?: boolean;
+};
+
+function isQueryWhere(value: unknown): value is QueryWhere {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function condition(table, where: QueryWhere = {}) {
   const clauses = Reflect.ownKeys(where).map((key) => {
-    if (key === Op.or) return or(...where[key].map((entry) => condition(table, entry)));
+    if (key === Op.or) {
+      const nested = where[key];
+      if (!Array.isArray(nested) || !nested.every(isQueryWhere)) {
+        throw new Error('Unsupported query condition');
+      }
+      return or(...nested.map((entry) => condition(table, entry)));
+    }
     const column = table[key];
     if (!column) throw new Error('Unknown query field');
     const value = where[key];
-    if (value && typeof value === 'object') {
-      if (Op.ne in value) return ne(column, value[Op.ne]);
-      if (Op.like in value) return ilike(column, value[Op.like]);
+    if (isQueryWhere(value)) {
+      if (Op.ne in value) return sql`${column} <> ${value[Op.ne]}`;
+      if (Op.like in value && typeof value[Op.like] === 'string') {
+        return sql`${column} ILIKE ${value[Op.like]}`;
+      }
       throw new Error('Unsupported query operator');
     }
-    return eq(column, value);
+    return sql`${column} = ${value}`;
   });
   return clauses.length ? and(...clauses) : undefined;
 }
@@ -38,7 +60,7 @@ function repository(table) {
   }
 
   return {
-    async findAll(options = {}) {
+    async findAll(options: FindOptions = {}) {
       const selection = options.attributes
         ? Object.fromEntries(options.attributes.map((key) => [key, table[key]]))
         : undefined;
@@ -60,7 +82,7 @@ function repository(table) {
       if (!Number.isSafeInteger(numericId) || numericId < 1) return null;
       return this.findOne({ where: { id: numericId } });
     },
-    async count(options = {}) {
+    async count(options: Pick<FindOptions, 'where'> = {}) {
       const [result] = await db.select({ total: count() }).from(table)
         .where(condition(table, options.where));
       return result.total;
@@ -74,7 +96,7 @@ function repository(table) {
         .onConflictDoNothing().returning();
       return inserted ? [record(inserted), true] : [await this.findOne({ where }), false];
     },
-    async update(values, options) {
+    async update(values, options: Pick<FindOptions, 'where'>) {
       return db.update(table).set({ ...values, updatedAt: new Date() })
         .where(condition(table, options.where)).returning();
     }
