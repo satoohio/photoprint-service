@@ -63,10 +63,10 @@ async function seed() {
     );
   }
 
-  console.log('Default site content initialized. Administrators are managed in Supabase Auth.');
+  console.log('Default site content initialized.');
 }
 
 seed().catch((error) => {
-  console.error('Seed failed. Check DATABASE_URL and Supabase configuration.');
+  console.error('Seed failed. Check DATABASE_URL and database migration status.');
   process.exit(1);
 });

@@ -74,7 +74,7 @@ async function createService(req, res) {
     icon: icon || 'fa-print',
     order: Number(order || 0),
     isActive: String(isActive) === 'on' || Boolean(isActive),
-    image: req.file ? `/uploads/services/${req.file.filename}` : null
+    image: req.file ? req.file.url : null
   });
 
   return service;
@@ -99,7 +99,7 @@ async function updateService(req, res, service) {
   }
 
   if (req.file) {
-    updateData.image = `/uploads/services/${req.file.filename}`;
+    updateData.image = req.file.url;
   } else if (removeImage === '1' || removeImage === 'on') {
     updateData.image = null;
   }

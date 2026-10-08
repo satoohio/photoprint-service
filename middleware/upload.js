@@ -24,9 +24,9 @@ function createUpload(section, allowVideo) {
         try {
           const filename = randomUUID() + path.extname(file.originalname).toLowerCase();
           const buffer = Buffer.concat(chunks);
-          const { uploadObject } = require('../utils/supabaseStorage');
-          await uploadObject(section + '/' + filename, file.mimetype, buffer);
-          callback(null, { filename, size, key: section + '/' + filename });
+          const { uploadObject } = require('../utils/blobStorage');
+          const url = await uploadObject(section + '/' + filename, file.mimetype, buffer);
+          callback(null, { filename, size, key: section + '/' + filename, url });
         } catch (error) {
           callback(error);
         }
@@ -35,8 +35,8 @@ function createUpload(section, allowVideo) {
     async _removeFile(req, file, callback) {
       try {
         if (file.key) {
-          const { deleteUpload } = require('../utils/supabaseStorage');
-          await deleteUpload(file.key);
+          const { deleteUpload } = require('../utils/blobStorage');
+          if (file.url) await deleteUpload(file.url);
         }
         callback(null);
       } catch (error) {

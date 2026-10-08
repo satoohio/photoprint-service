@@ -55,7 +55,7 @@ router.get('/login', asyncHandler(loginPage));
 router.post('/login', authLimiter, asyncHandler(loginUser));
 router.post('/logout', asyncHandler(logoutUser));
 
-router.use(requireAuth);
+router.use(asyncHandler(requireAuth));
 
 router.get('/', asyncHandler(renderDashboard));
 
