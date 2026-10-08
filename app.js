@@ -21,6 +21,11 @@ const apiRouter = require('./routes/api');
 
 const app = express();
 const projectRoot = process.env.LAMBDA_TASK_ROOT || process.cwd();
+let databaseInitialization;
+
+app.use((req, res, next) => {
+  startApp().then(() => next(), next);
+});
 
 app.use(helmet({
   contentSecurityPolicy: false,
@@ -123,8 +128,13 @@ app.use((err, req, res, next) => {
 });
 
 async function startApp() {
-  await syncDatabase();
+  if (!databaseInitialization) {
+    databaseInitialization = syncDatabase();
+  }
+  await databaseInitialization;
   return app;
 }
 
-module.exports = { app, startApp };
+app.startApp = startApp;
+
+module.exports = app;

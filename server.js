@@ -1,7 +1,7 @@
-const { startApp } = require('./app');
+const app = require('./app');
 
 async function main() {
-  const app = await startApp();
+  await app.startApp();
   const port = process.env.PORT || 3000;
 
   app.listen(port, () => {

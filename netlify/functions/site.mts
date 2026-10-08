@@ -7,7 +7,7 @@ export default async function site(request: Request, context: Context) {
       import('serverless-http')
     ]);
     const url = new URL(request.url);
-    const handler = serverless(application.app, {
+    const handler = serverless(application, {
       binary: true,
       request(incoming) {
         incoming.platformIp = context.ip;
