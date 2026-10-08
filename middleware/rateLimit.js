@@ -8,15 +8,15 @@ function createLimiter(prefix, options) {
       this.windowMs = settings.windowMs;
     },
     async increment(key) {
-      const { incrementRateLimit } = await import('../db/repositories.ts');
+      const { incrementRateLimit } = require('../db/repositories.js');
       return incrementRateLimit(`${prefix}:${key}`, this.windowMs);
     },
     async decrement(key) {
-      const { decrementRateLimit } = await import('../db/repositories.ts');
+      const { decrementRateLimit } = require('../db/repositories.js');
       await decrementRateLimit(`${prefix}:${key}`);
     },
     async resetKey(key) {
-      const { resetRateLimit } = await import('../db/repositories.ts');
+      const { resetRateLimit } = require('../db/repositories.js');
       await resetRateLimit(`${prefix}:${key}`);
     }
   };

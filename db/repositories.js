@@ -1,25 +1,15 @@
-import { and, or, eq, asc, desc, count, sql } from 'drizzle-orm';
-import { db } from './index';
-import { services, galleryItems, orders, settings, rateLimits } from './schema';
-import operators from '../utils/operators.js';
+const { and, or, eq, asc, desc, count, sql } = require('drizzle-orm');
+const { db } = require('./index.js');
+const { services, galleryItems, orders, settings, rateLimits } = require('./schema.js');
+const operators = require('../utils/operators.js');
 
 const { Op } = operators;
 
-type QueryWhere = Record<PropertyKey, unknown>;
-
-type FindOptions = {
-  attributes?: string[];
-  where?: QueryWhere;
-  order?: [string, string][];
-  limit?: number;
-  raw?: boolean;
-};
-
-function isQueryWhere(value: unknown): value is QueryWhere {
+function isQueryWhere(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
-function condition(table, where: QueryWhere = {}) {
+function condition(table, where = {}) {
   const clauses = Reflect.ownKeys(where).map((key) => {
     if (key === Op.or) {
       const nested = where[key];
@@ -60,7 +50,7 @@ function repository(table) {
   }
 
   return {
-    async findAll(options: FindOptions = {}) {
+    async findAll(options = {}) {
       const selection = options.attributes
         ? Object.fromEntries(options.attributes.map((key) => [key, table[key]]))
         : undefined;
@@ -82,7 +72,7 @@ function repository(table) {
       if (!Number.isSafeInteger(numericId) || numericId < 1) return null;
       return this.findOne({ where: { id: numericId } });
     },
-    async count(options: Pick<FindOptions, 'where'> = {}) {
+    async count(options = {}) {
       const [result] = await db.select({ total: count() }).from(table)
         .where(condition(table, options.where));
       return result.total;
@@ -96,21 +86,21 @@ function repository(table) {
         .onConflictDoNothing().returning();
       return inserted ? [record(inserted), true] : [await this.findOne({ where }), false];
     },
-    async update(values, options: Pick<FindOptions, 'where'>) {
+    async update(values, options) {
       return db.update(table).set({ ...values, updatedAt: new Date() })
         .where(condition(table, options.where)).returning();
     }
   };
 }
 
-export const repositories = {
+const repositories = {
   Service: repository(services),
   GalleryItem: repository(galleryItems),
   Order: repository(orders),
   Setting: repository(settings)
 };
 
-export async function incrementRateLimit(key, windowMs) {
+async function incrementRateLimit(key, windowMs) {
   const expiresAt = new Date(Date.now() + windowMs);
   const [row] = await db.insert(rateLimits).values({ key, hits: 1, expiresAt })
     .onConflictDoUpdate({
@@ -123,11 +113,18 @@ export async function incrementRateLimit(key, windowMs) {
   return { totalHits: row.hits, resetTime: row.expiresAt };
 }
 
-export async function decrementRateLimit(key) {
+async function decrementRateLimit(key) {
   await db.update(rateLimits).set({ hits: sql`greatest(0, ${rateLimits.hits} - 1)` })
     .where(eq(rateLimits.key, key));
 }
 
-export async function resetRateLimit(key) {
+async function resetRateLimit(key) {
   await db.delete(rateLimits).where(eq(rateLimits.key, key));
 }
+
+module.exports = {
+  repositories,
+  incrementRateLimit,
+  decrementRateLimit,
+  resetRateLimit
+};

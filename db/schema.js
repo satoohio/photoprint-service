@@ -1,14 +1,14 @@
-import { pgTable, serial, text, integer, boolean, doublePrecision, timestamp, pgEnum } from 'drizzle-orm/pg-core';
+const { pgTable, serial, text, integer, boolean, doublePrecision, timestamp, pgEnum } = require('drizzle-orm/pg-core');
 
 const timestamps = () => ({
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });
 
-export const galleryType = pgEnum('gallery_type', ['image', 'video']);
-export const orderStatus = pgEnum('order_status', ['new', 'in_progress', 'done']);
+const galleryType = pgEnum('gallery_type', ['image', 'video']);
+const orderStatus = pgEnum('order_status', ['new', 'in_progress', 'done']);
 
-export const services = pgTable('services', {
+const services = pgTable('services', {
   id: serial('id').primaryKey(),
   title: text('title').notNull(),
   slug: text('slug').notNull().unique(),
@@ -22,7 +22,7 @@ export const services = pgTable('services', {
   ...timestamps()
 });
 
-export const galleryItems = pgTable('gallery_items', {
+const galleryItems = pgTable('gallery_items', {
   id: serial('id').primaryKey(),
   title: text('title').notNull(),
   type: galleryType('type').notNull().default('image'),
@@ -34,7 +34,7 @@ export const galleryItems = pgTable('gallery_items', {
   ...timestamps()
 });
 
-export const orders = pgTable('orders', {
+const orders = pgTable('orders', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   phone: text('phone').notNull(),
@@ -45,15 +45,25 @@ export const orders = pgTable('orders', {
   ...timestamps()
 });
 
-export const settings = pgTable('settings', {
+const settings = pgTable('settings', {
   id: serial('id').primaryKey(),
   key: text('key').notNull().unique(),
   value: text('value').notNull().default(''),
   ...timestamps()
 });
 
-export const rateLimits = pgTable('rate_limits', {
+const rateLimits = pgTable('rate_limits', {
   key: text('key').primaryKey(),
   hits: integer('hits').notNull().default(1),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull()
 });
+
+module.exports = {
+  galleryType,
+  orderStatus,
+  services,
+  galleryItems,
+  orders,
+  settings,
+  rateLimits
+};

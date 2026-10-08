@@ -2,7 +2,7 @@ function createModel(name) {
   const model = {};
   for (const method of ['findAll', 'findOne', 'findByPk', 'count', 'create', 'findOrCreate', 'update']) {
     model[method] = async (...args) => {
-      const { repositories } = await import('../db/repositories.ts');
+      const { repositories } = require('../db/repositories.js');
       return repositories[name][method](...args);
     };
   }
