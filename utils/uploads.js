@@ -13,18 +13,17 @@ async function safeDeleteUpload(urlPath) {
   const match = typeof urlPath === 'string' && urlPath.match(UPLOAD_PATH);
   if (!match) return;
   try {
-    const { getStore } = await import('@netlify/blobs');
-    await getStore('photoprint-uploads').delete(match[1] + '/' + match[2]);
-  } catch {
-    console.error('Upload cleanup failed');
+    const { deleteUpload } = require('./supabaseStorage');
+    await deleteUpload(match[1] + '/' + match[2]);
+  } catch (error) {
+    console.error('Upload cleanup failed:', error.name);
   }
 }
 
 async function serveUpload(req, res) {
   if (!UPLOAD_PATH.test(req.path)) return res.status(404).send('Файл не найден');
-  const { getStore } = await import('@netlify/blobs');
-  const content = await getStore({ name: 'photoprint-uploads', consistency: 'strong' })
-    .get(req.params.section + '/' + req.params.filename, { type: 'arrayBuffer' });
+  const { downloadUpload } = require('./supabaseStorage');
+  const content = await downloadUpload(req.params.section + '/' + req.params.filename);
   if (!content) return res.status(404).send('Файл не найден');
   res.setHeader('Content-Type', CONTENT_TYPES[path.extname(req.params.filename).toLowerCase()]);
   res.setHeader('X-Content-Type-Options', 'nosniff');

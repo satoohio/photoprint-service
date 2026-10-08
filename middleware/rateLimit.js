@@ -27,7 +27,7 @@ function createLimiter(prefix, options) {
     standardHeaders: true,
     legacyHeaders: false,
     validate: { xForwardedForHeader: false },
-    keyGenerator: (req) => createHash('sha256').update(req.platformIp || req.ip || 'unknown').digest('hex')
+    keyGenerator: (req) => createHash('sha256').update(req.ip || 'unknown').digest('hex')
   });
 }
 

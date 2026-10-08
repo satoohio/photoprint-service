@@ -3,7 +3,7 @@ const { createLimiter } = require('../middleware/rateLimit');
 const asyncHandler = require('../utils/asyncHandler');
 const { requireAuth } = require('../middleware/auth');
 const { uploadServiceImage, uploadGalleryMedia } = require('../middleware/upload');
-const { loginPage, loginUser, logoutUser, acceptInvitation } = require('../controllers/authController');
+const { loginPage, loginUser, logoutUser } = require('../controllers/authController');
 const {
   renderDashboard,
   renderServicesPage,
@@ -53,7 +53,6 @@ function handleUpload(uploadMiddleware) {
 
 router.get('/login', asyncHandler(loginPage));
 router.post('/login', authLimiter, asyncHandler(loginUser));
-router.post('/invite', authLimiter, asyncHandler(acceptInvitation));
 router.post('/logout', asyncHandler(logoutUser));
 
 router.use(requireAuth);

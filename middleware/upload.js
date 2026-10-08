@@ -22,24 +22,25 @@ function createUpload(section, allowVideo) {
       file.stream.once('end', async () => {
         if (file.stream.truncated) return callback(new multer.MulterError('LIMIT_FILE_SIZE'));
         try {
-          const { getStore } = await import('@netlify/blobs');
           const filename = randomUUID() + path.extname(file.originalname).toLowerCase();
           const buffer = Buffer.concat(chunks);
-          await getStore({ name: 'photoprint-uploads', consistency: 'strong' })
-            .set(section + '/' + filename, buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength));
+          const { uploadObject } = require('../utils/supabaseStorage');
+          await uploadObject(section + '/' + filename, file.mimetype, buffer);
           callback(null, { filename, size, key: section + '/' + filename });
-        } catch {
-          callback(new Error('Не удалось сохранить файл'));
+        } catch (error) {
+          callback(error);
         }
       });
     },
     async _removeFile(req, file, callback) {
       try {
-        const { getStore } = await import('@netlify/blobs');
-        if (file.key) await getStore('photoprint-uploads').delete(file.key);
+        if (file.key) {
+          const { deleteUpload } = require('../utils/supabaseStorage');
+          await deleteUpload(file.key);
+        }
         callback(null);
-      } catch {
-        callback(new Error('Не удалось удалить файл'));
+      } catch (error) {
+        callback(error);
       }
     }
   };

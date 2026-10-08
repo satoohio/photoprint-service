@@ -10,6 +10,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error('Failed to start server. Check Netlify Database configuration.');
+  console.error('Failed to start server. Check DATABASE_URL and Supabase configuration.');
   process.exit(1);
 });

@@ -20,12 +20,10 @@ const adminRouter = require('./routes/admin');
 const apiRouter = require('./routes/api');
 
 const app = express();
-const projectRoot = process.env.LAMBDA_TASK_ROOT || process.cwd();
+const projectRoot = process.cwd();
 let databaseInitialization;
 
-app.use((req, res, next) => {
-  startApp().then(() => next(), next);
-});
+app.set('trust proxy', 1);
 
 app.use(helmet({
   contentSecurityPolicy: false,
@@ -41,7 +39,7 @@ app.use(cookieParser());
 app.use(flashMessages);
 app.use((req, res, next) => {
   if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin) {
-    const expectedOrigin = req.platformOrigin || `${req.protocol}://${req.get('host')}`;
+    const expectedOrigin = `${req.protocol}://${req.get('host')}`;
     if (req.headers.origin !== expectedOrigin) {
       return res.status(403).send('Запрос с другого сайта запрещён');
     }
@@ -72,6 +70,10 @@ app.get(Object.keys(legacyPlaceholderFiles), (req, res, next) => {
 
 app.get('/uploads/:section/:filename', asyncHandler(require('./utils/uploads').serveUpload));
 app.use(express.static(path.join(projectRoot, 'public')));
+
+app.use((req, res, next) => {
+  startApp().then(() => next(), next);
+});
 
 app.use(async (req, res, next) => {
   res.locals.flash = req.flash();
@@ -110,7 +112,8 @@ app.get('/robots.txt', (req, res) => {
 
 app.get('/sitemap.xml', (req, res) => {
   res.type('application/xml');
-  const baseUrl = (process.env.BASE_URL || req.platformOrigin || process.env.URL || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '');
+  const deploymentUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+  const baseUrl = (process.env.BASE_URL || (deploymentUrl ? `https://${deploymentUrl}` : `${req.protocol}://${req.get('host')}`)).replace(/\/$/, '');
   const escapedUrl = baseUrl.replace(/[<>&"']/g, (character) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' })[character]);
   res.send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${['/', '/services', '/gallery', '/contacts'].map((page) => `  <url><loc>${escapedUrl}${page}</loc></url>`).join('\n')}\n</urlset>`);
 });
@@ -120,11 +123,21 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error('Request failed:', err.name, err.cause?.code || '');
+  const message = typeof err.message === 'string'
+    ? err.message.replace(/(postgres(?:ql)?:\/\/[^:\s/]+:)[^@\s/]+@/gi, '$1[REDACTED]@')
+    : '';
+  console.error('Request failed:', err.name, message, err.cause?.code || '');
   if (res.headersSent) {
     return next(err);
   }
-  res.status(500).render('500', { title: 'Ошибка сервера', error: 'Попробуйте позже.' });
+  res.status(500).render('500', {
+    title: 'Ошибка сервера',
+    error: 'Попробуйте позже.',
+    flash: {},
+    settings: {},
+    currentYear: new Date().getFullYear(),
+    activePage: ''
+  });
 });
 
 async function startApp() {
